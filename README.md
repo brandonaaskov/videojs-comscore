@@ -35,7 +35,7 @@ When initializing the comScore plugin, you need to provide it with at least two 
 #### playlist of clips (array)
 The second argument supplied to the comScore plugin should be an array of clips. If you're not using the optional keymap argument, then this playlist will need to conform to the default keymap, which basically just means that the keys you see below need to stay the same, and you'll supply the values. A playlist should be an array of objects just like this one:
 
-```json
+```javascript
 ad: false, // is this clip an ad?
 duration: 343000, // video duration in ms
 id: 'adfa89fasd9f8asdf', // my unique id
@@ -58,7 +58,7 @@ If you don't use a keymap, it means that the data structure in your playlist arr
 }
 ```
 
-Then the plugin will expect that each clip item in the playlist array will have a key called 'videoLocation' and another called 'displayName', and that the values should map to what we're calling `url` and `name`. Thus, the right values get sent to comScore.
+Then the plugin will expect that each clip item in the playlist array will have a key called `videoLocation` and another called `displayName`, and that the values should map to what the plugin is calling `url` and `name`. Thus, the right values get sent to comScore.
 
 ## Examples
 Check out example.html to see videojs-comscore in action.
