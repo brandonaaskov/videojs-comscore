@@ -157,8 +157,6 @@
     // must happen before the clips get created
     if (keymapOverride) {
       keymap = extend({}, keymap, keymapOverride);
-      console.log('keymapOverride', keymapOverride);
-      console.log('keymap', keymap);
     }
 
     var clips = playlist.map(function (metadata, index) {
@@ -167,7 +165,7 @@
 
     if (clips.length > 0) {
       tracker.setPlaylist(clips);
-      console.log('clips', clips);
+//      console.log('clips', clips);
     }
 
     /** http://cl.ly/UEPc
