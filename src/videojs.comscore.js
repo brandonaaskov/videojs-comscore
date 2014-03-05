@@ -8,38 +8,20 @@
 
 (function (vjs) {
 
-  var extend = function (obj /*, arg1, arg2, ... */) {
-    var arg, i, k;
-    for (i = 1; i < arguments.length; i++) {
-      arg = arguments[i];
-      for (k in arg) {
-        if (arg.hasOwnProperty(k)) {
-          obj[k] = arg[k];
-        }
-      }
-    }
-    return obj;
-  };
-
-// define some reasonable defaults for this sweet plugin
-  var defaults = {
-    awesome: true
-  };
-
-  var comscoreBaseUrl = 'http://b.scorecardresearch.com/p';
-
-  var comscoreAttributes = {
-    ns_st_cn: 'clip number', // determines the order of clips in a playlist
-    ns_st_ci: 'content id', // your internal unique identification of each content asset
-    ns_st_pn: 'part number', // identifies a segment of the content (increment after mid-roll ad)
-    ns_st_tp: 'total parts', // total segments (or 0 if no segments)
-    ns_st_cl: 'clip length',
-    ns_st_pu: 'publisher brand name', // consumer-facing brand name of the publisher that owns the content
-    ns_st_pr: 'program name', // name of the overall program, show, or content series
-    ns_st_ep: 'episode title',
-    ns_st_cu: 'clip url', // URL of the content asset (or "none")
-    ns_st_ad: 'advertisement flag', // identifies the clip as an ad
-    ns_st_ct: 'classification type' // 4-character ID which distinguishes advertisement stream types from content stream types
+  //------------------------------------------------------------ private
+  /**
+   * This keymap defines how to map the internal keys (left-hand side) to the
+   * user's key name (right-hand side).
+   */
+  var keymap = {
+    ad: 'ad',
+    duration: 'duration',
+    index: 'index',
+    id: 'id',
+    name: 'name',
+    publisher: 'publisher',
+    show: 'show',
+    url: 'url'
   };
 
   var comscoreClassificationTypes = {
@@ -59,6 +41,7 @@
         ugc: 'vc23'
       },
 
+      audio: 'ac00',
       default: 'vc00'
     },
 
@@ -67,113 +50,162 @@
       midroll: 'va12',
       postroll: 'va13',
       live: 'va21',
+      audio: 'aa00',
       default: 'va00'
     }
   };
 
-  var isLongForm = function (videoLength) {
-    return videoLength/1000/60 > 10;
-  };
+  function extend (obj /*, arg1, arg2, ... */) {
+    var arg, i, k;
+    for (i = 1; i < arguments.length; i++) {
+      arg = arguments[i];
+      for (k in arg) {
+        if (arg.hasOwnProperty(k)) {
+          obj[k] = arg[k];
+        }
+      }
+    }
+    return obj;
+  }
+  //------------------------------------------------------------
 
-// plugin initializer
-  var comscore = function (options) {
+
+
+
+
+  //------------------------------------------------------------ Clip
+  var Clip = (function() {
+    Clip.name = 'Clip';
+
+    /** todo support these as well
+     * var ns_st_pn = 'part number'; // identifies a segment of the content (increment after mid-roll ad)
+     * var ns_st_tp = 'total parts'; // total segments (or 0 if no segments)
+     * var ns_st_ct = 'classification type'; // 4-character ID which distinguishes advertisement stream types from content stream types
+     */
+
+    function Clip(index, metadata) {
+      this.ad(metadata[keymap.ad]);
+      this.duration(metadata[keymap.duration]);
+      this.index(index);
+      this.id(metadata[keymap.id]);
+      this.name(metadata[keymap.name]);
+      this.publisher(metadata[keymap.publisher]);
+      this.show(metadata[keymap.show]);
+      this.url(metadata[keymap.url]);
+    };
+
+    Clip.prototype.ad = function (flag) {
+      if (flag) this.ns_st_ad = flag;
+      return this.ns_st_ad
+    };
+
+    Clip.prototype.duration = function (length, inSeconds) {
+      if (length) this.ns_st_cl = (inSeconds) ? length * 1000 : length;
+      return this.ns_st_cl;
+    };
+
+    Clip.prototype.index = function (index) {
+      if (index) this.ns_st_cn = index;
+      return this.ns_st_cn
+    };
+
+    Clip.prototype.id = function (id) {
+      if (id) this.ns_st_ci = id;
+      return this.ns_st_ci;
+    };
+
+    Clip.prototype.name = function (name) {
+      if (name) this.ns_st_ep = name;
+      return this.ns_st_ep;
+    };
+
+    Clip.prototype.publisher = function (name) {
+      if (name) this.ns_st_pu = name;
+      return this.ns_st_pu;
+    };
+
+    Clip.prototype.show = function (name) {
+      if (name) this.ns_st_pr = name;
+      return this.ns_st_pr;
+    };
+
+    Clip.prototype.url = function (url) {
+      if (url) this.ns_st_cu = url;
+      return this.ns_st_cu;
+    };
+
+    return Clip;
+  })();
+  //------------------------------------------------------------
+
+
+
+
+  //------------------------------------------------------------ plugin
+  var comscore = function (id, playlist, keymapOverride) {
+    var events = {
+      BUFFER: ns_.StreamSense.PlayerEvents.BUFFER,
+      END: ns_.StreamSense.PlayerEvents.END,
+      PLAY: ns_.StreamSense.PlayerEvents.PLAY,
+      PAUSE: ns_.StreamSense.PlayerEvents.PAUSE
+    };
+
     var player = this; // save a reference to the player instance
-    var settings = extend({}, defaults, options || {}); // merge options and defaults
+    var tracker = new ns_.StreamSense({}, 'http://b.scorecardresearch.com/p?c1=2&c2=' + id);
+    var currentClip = null;
 
-    /**
+    // must happen before the clips get created
+    if (keymapOverride) {
+      keymap = extend({}, keymap, keymapOverride);
+      console.log('keymapOverride', keymapOverride);
+      console.log('keymap', keymap);
+    }
+
+    var clips = playlist.map(function (metadata, index) {
+      return new Clip(index, metadata);
+    });
+
+    if (clips.length > 0) {
+      tracker.setPlaylist(clips);
+      console.log('clips', clips);
+    }
+
+    /** http://cl.ly/UEPc
      * todo
      * create a new object with the right base url and config id
-     * set the current playlist with setPlaylist()
-     * set the clip that's currently loaded
      * notify during state changes:
      *  starts buffering
      *  playback is paused or user starts seeking during playback
-     *  playback starts or resumes or seeking is completed
      *  playback ends
      */
 
-    /**
-     * HTML EVENTS LIST (http://cl.ly/UEPc)
-     * loadstart
-     * emptied
-     * canplaythrough
-     * ended
-     * ratechange
-     * progress
-     * playing
-     * stalled
-     * durationchange
-     * resize
-     * suspend
-     * loadedmetadata
-     * waiting
-     * timeupadte
-     * volumechange
-     * abort
-     * loadeddata
-     * seeking
-     * play
-     * error
-     * canplay
-     * seeked
-     * pause
-     *
-     * VIDEOJS EVENTS (listed in docs)
-     * durationchange
-     * ended
-     * error
-     * firstplay
-     * fullscreenchange
-     * loadedalldata
-     * loadeddata
-     * loadedmetadata
-     * loadstart
-     * pause
-     * play
-     * progress
-     * timeupdate
-     * volumechange
-     * resize
-     *
-     * VIDEO JS METHODS (listed in docs)
-     * buffered
-     * bufferedPercent
-     * cancelFullScreen
-     * controls
-     * currentTime
-     * dispose
-     * duration
-     * init
-     * isFullScreen
-     * muted
-     * pause
-     * paused
-     * play
-     * poster
-     * requestFullScreen
-     * src
-     * volume
-     */
-
-    player.on('play', function (event) {
-      console.log('play', event);
+    player.on('firstplay', function () {
+      console.log('first');
     });
 
-    player.on('loadeddata', function (event) {
-      console.log('loadedtata', event)
+    player.on('play', function () {
+      tracker.notify(events.PLAY, {}, player.currentTime() * 1000);
     });
 
-    player.on('loadedmetadata', function (event) {
-      console.log('loadedmetadata', event)
+    player.on('loadeddata', function () {
+      currentClip = clips[0];
+      currentClip.url(player.currentSrc());
+      tracker.setClip(currentClip);
+    });
+
+    player.on('ended', function () {
+      tracker.notify(events.END, {}, player.currentTime() * 1000);
+    });
+
+    player.on('paused', function () {
+      tracker.notify(events.PAUSE, {}, player.currentTime() * 1000);
     });
 
     // replace the initializer with the plugin functionality
-    player.comscore = {
-      setCurrentVideo: function (video) {
-        console.log('setcurrentvideo', video);
-      }
-    };
+    player.comscore = {};
   };
+  //------------------------------------------------------------
+
 
   // register the plugin with video.js
   vjs.plugin('comscore', comscore);

@@ -15,10 +15,11 @@
   You can see a player configured with the videojs-comscore plugin below. Check out
   the page source to see an example of how to configure the plugin yourself.
 </p>
-<video class="video-js vjs-default-skin" src="http://vjs.zencdn.net/v/oceans.mp4" data-setup="{}" controls></video>
+<video class="video-js vjs-default-skin" src="https://s3-us-west-1.amazonaws.com/fullscreen-tv/uploads/balloon+jump+480p.mp4" controls></video>
 
+<script src="libs/comscore/streamsense.min.js"></script>
 <script src="src/videojs.comscore.js"></script>
-<!-- 
+<!--
   video.js will automatically initialize the video element since it's loaded in
   the head of the document but you still need to configure and initialize the
   plugin.
@@ -33,9 +34,23 @@ var
   player = videojs(video);
 
   // initialize the plugin with some custom options:
-  player.comscore({
-    playlist: []
-  });
+  player.comscore(1234567890, [
+    {
+      id: 45234532,
+      name: 'Zencoder test video',
+      publisher: 'Zencoder',
+      url: 'http://vjs.zencdn.net/v/oceans.mp4'
+    },
+    {
+      id: 'adas23490d8fasd9f8asd9f08ad0f',
+      name: 'Test Video',
+      show: 'Hampton Testing',
+      duration: 900000, // in ms
+      publisher: 'Brandon Aaskov',
+      ad: false,
+      url: 'https://s3-us-west-1.amazonaws.com/fullscreen-tv/uploads/balloon+jump+480p.mp4'
+    }]
+  );
 </script>
 </body>
 </html>
