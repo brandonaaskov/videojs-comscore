@@ -63,5 +63,62 @@ Then the plugin will expect that each clip item in the playlist array will have 
 ## Examples
 Check out example.html to see videojs-comscore in action.
 
+#### basic setup
+```javascript
+//grab the player reference
+var video = document.querySelector('video');
+var player = videojs(video);
+
+//prep the comscore stuff
+var comScoreId = 1234567890;
+var firstClip = {
+  id: 45234532,
+  name: 'Zencoder test video',
+  publisher: 'Zencoder',
+  url: 'http://vjs.zencdn.net/v/oceans.mp4'
+};
+var secondClip = {
+  id: 'adas23490d8fasd9f8asd9f08ad0f',
+  name: 'Test Video',
+  show: 'Hampton Testing',
+  duration: 900000, // in ms
+  publisher: 'Brandon Aaskov',
+  ad: false,
+  url: 'https://s3-us-west-1.amazonaws.com/fullscreen-tv/uploads/balloon+jump+480p.mp4'
+};
+var playlist = [firstClip, secondClip];
+
+player.comscore(1234567890, playlist);
+```
+
+If you wanted to use an optional keymap, using the same example above...
+
+```javascript
+//our clips with custom keys
+var firstClip = {
+  id: 45234532,
+  displayName: 'Zencoder test video',
+  publisher: 'Zencoder',
+  videoLocation: 'http://vjs.zencdn.net/v/oceans.mp4'
+};
+var secondClip = {
+  id: 'adas23490d8fasd9f8asd9f08ad0f',
+  displayName: 'Test Video',
+  show: 'Hampton Testing',
+  duration: 900000, // in ms
+  publisher: 'Brandon Aaskov',
+  ad: false,
+  videoLocation: 'https://s3-us-west-1.amazonaws.com/fullscreen-tv/uploads/balloon+jump+480p.mp4'
+};
+
+//our new keymap object
+var keymap = {
+  url: 'videoLocation',
+  name: 'displayName'
+};
+
+player.comscore(1234567890, playlist, keymap);
+```
+
 ## Release History
-_(Nothing yet)_
+0.1.0 : totally untested and unverified, but it appears to be working properly :)

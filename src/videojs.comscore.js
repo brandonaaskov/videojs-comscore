@@ -8,7 +8,7 @@
 
 (function (vjs) {
 
-  //------------------------------------------------------------ private
+//------------------------------------------------------------ private
   /**
    * This keymap defines how to map the internal keys (left-hand side) to the
    * user's key name (right-hand side).
@@ -24,7 +24,8 @@
     url: 'url'
   };
 
-  var comscoreClassificationTypes = {
+  // page 13 (http://cl.ly/UGkP)
+  var classificationTypes = {
     video: {
       shortform: {
         premium: 'vc11',
@@ -55,7 +56,9 @@
     }
   };
 
-  function extend (obj /*, arg1, arg2, ... */) {
+
+  // supplied during the `$ grunt-init videojs` process
+  function extend(obj /*, arg1, arg2, ... */) {
     var arg, i, k;
     for (i = 1; i < arguments.length; i++) {
       arg = arguments[i];
@@ -67,14 +70,12 @@
     }
     return obj;
   }
-  //------------------------------------------------------------
+
+//------------------------------------------------------------
 
 
-
-
-
-  //------------------------------------------------------------ Clip
-  var Clip = (function() {
+//------------------------------------------------------------ Clip
+  var Clip = (function () {
     Clip.name = 'Clip';
 
     /** todo support these as well
@@ -94,6 +95,7 @@
       this.url(metadata[keymap.url]);
     };
 
+// getters/setters
     Clip.prototype.ad = function (flag) {
       if (flag) this.ns_st_ad = flag;
       return this.ns_st_ad
@@ -136,12 +138,10 @@
 
     return Clip;
   })();
-  //------------------------------------------------------------
+//------------------------------------------------------------
 
 
-
-
-  //------------------------------------------------------------ plugin
+//------------------------------------------------------------ plugin
   var comscore = function (id, playlist, keymapOverride) {
     var events = {
       BUFFER: ns_.StreamSense.PlayerEvents.BUFFER,
@@ -154,7 +154,7 @@
     var tracker = new ns_.StreamSense({}, 'http://b.scorecardresearch.com/p?c1=2&c2=' + id);
     var currentClip = null;
 
-    // must happen before the clips get created
+// must happen before the clips get created
     if (keymapOverride) {
       keymap = extend({}, keymap, keymapOverride);
     }
@@ -165,21 +165,7 @@
 
     if (clips.length > 0) {
       tracker.setPlaylist(clips);
-//      console.log('clips', clips);
     }
-
-    /** http://cl.ly/UEPc
-     * todo
-     * create a new object with the right base url and config id
-     * notify during state changes:
-     *  starts buffering
-     *  playback is paused or user starts seeking during playback
-     *  playback ends
-     */
-
-    player.on('firstplay', function () {
-//      console.log('first');
-    });
 
     player.on('play', function () {
       tracker.notify(events.PLAY, {}, player.currentTime() * 1000);
@@ -199,13 +185,13 @@
       tracker.notify(events.PAUSE, {}, player.currentTime() * 1000);
     });
 
-    // replace the initializer with the plugin functionality
+// replace the initializer with the plugin functionality
     player.comscore = {};
   };
-  //------------------------------------------------------------
+//------------------------------------------------------------
 
 
-  // register the plugin with video.js
+// register the plugin with video.js
   vjs.plugin('comscore', comscore);
 
 }(window.videojs));

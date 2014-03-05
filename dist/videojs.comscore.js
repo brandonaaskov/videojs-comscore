@@ -1,4 +1,4 @@
-/*! videojs-comscore - v0.1.0 - 2014-03-04
+/*! videojs-comscore - v0.1.0 - 2014-03-05
 * Copyright (c) 2014 Brandon Aaskov; Licensed  */
 (function (vjs) {
 
@@ -172,7 +172,7 @@
      */
 
     player.on('firstplay', function () {
-      console.log('first');
+//      console.log('first');
     });
 
     player.on('play', function () {
