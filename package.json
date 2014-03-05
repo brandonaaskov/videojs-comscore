@@ -3,16 +3,15 @@
   "version": "0.1.0",
   "author": {
     "name": "Brandon Aaskov",
-    "email": "baaskov@fullscreen.net"
+    "email": "brandonaaskov@gmail.com"
   },
   "engines": {
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "test": "grunt qunit"
+    "test": "grunt test"
   },
   "devDependencies": {
-    "grunt-contrib-jshint": "~0.6.0",
     "grunt-contrib-qunit": "~0.2.0",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-uglify": "~0.2.0",

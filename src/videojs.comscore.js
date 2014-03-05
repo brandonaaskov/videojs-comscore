@@ -178,7 +178,7 @@
      */
 
     player.on('firstplay', function () {
-      console.log('first');
+//      console.log('first');
     });
 
     player.on('play', function () {
