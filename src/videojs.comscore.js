@@ -8,7 +8,7 @@
 
 (function (vjs) {
 
-//------------------------------------------------------------ private
+  //------------------------------------------------------------ private
   /**
    * This keymap defines how to map the internal keys (left-hand side) to the
    * user's key name (right-hand side).
@@ -71,10 +71,32 @@
     return obj;
   }
 
-//------------------------------------------------------------
+  function isBoolean(obj) {
+    return obj === true || obj === false || toString.call(obj) == '[object Boolean]';
+  }
+
+  function isArray(obj) {
+    toString.call(obj) !== '[object Array]'
+  }
+
+  function isEmpty(obj) {
+    if (obj == null) return true;
+    if (_.isArray(obj) || _.isString(obj)) return obj.length === 0;
+    for (var key in obj) if (_.has(obj, key)) return false;
+    return true;
+  }
+
+  function isString(value) {
+    return typeof value == 'string';
+  }
+
+  function isNumber(value) {
+    return parseInt(value, 10) === NaN;
+  }
+  //------------------------------------------------------------
 
 
-//------------------------------------------------------------ Clip
+  //------------------------------------------------------------ Clip
   var Clip = (function () {
     Clip.name = 'Clip';
 
@@ -143,6 +165,16 @@
 
 //------------------------------------------------------------ plugin
   var comscore = function (id, playlist, keymapOverride) {
+    if (!isNumber(id)) {
+      throw new Error("The first argument should be your comScore ID");
+      return false;
+    }
+
+    if (isArray(playlist)) {
+      throw new Error("The second argument should be an array (can be empty)");
+      return false;
+    }
+
     var events = {
       BUFFER: ns_.StreamSense.PlayerEvents.BUFFER,
       END: ns_.StreamSense.PlayerEvents.END,

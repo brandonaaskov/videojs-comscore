@@ -51,25 +51,44 @@
     }
   });
 
-  test('is registered', function() {
-    expect(1);
+  test('plugin is registered', function() {
     ok(this.player.comscore, 'the comscore plugin is present');
   });
 
-  test('is awesome', function() {
-    expect(2);
-    this.player.comscore();
-    strictEqual(this.player.comscore.go(), 'awesome.', 'should be awesome');
-    strictEqual(this.player.comscore.extreme(), 'awesome!', 'should be thoroughly awesome');
+  test('arguments type checking works', function() {
+    var playlist = [];
+
+    throws(function () {
+      this.player.comscore();
+    }, 'no arguments');
+
+    throws(function () {
+      this.player.comscore('', playlist);
+    }, 'empty string');
+
+    throws(function () {
+      this.player.comscore([], playlist);
+    }, 'id as an empty array');
+
+    throws(function () {
+      this.player.comscore({}, playlist);
+    }, 'id as an empty object');
+
+    throws(function () {
+      this.player.comscore(true, playlist);
+    }, 'id as a boolean');
+
+    ok(function () {
+      this.player.comscore(123456789, playlist);
+    }, 'a number and empty array');
   });
 
-  test('default options can be overridden', function() {
-    expect(1);
-    this.player.comscore({
-      awesome: false
-    });
-
-    strictEqual(this.player.comscore.go(), ':(', 'should be sad face');
-  });
+  /**
+   * todo
+   * keymap support
+   * variable mapping support
+   * getter/setters working
+   * 
+   */
 
 }(window.videojs));

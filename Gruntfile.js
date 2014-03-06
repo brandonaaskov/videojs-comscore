@@ -1,3 +1,5 @@
+/** */
+
 'use strict';
 
 var livereload = require('connect-livereload')();
@@ -70,8 +72,8 @@ module.exports = function (grunt) {
         options: {
           hostname: '127.0.0.1',
           port: 1337,
-          protocol: 'http',
           keepalive: true,
+          protocol: 'http',
           debug: true
         }
       }
@@ -87,7 +89,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-connect');
 
   // Default task.
-  grunt.registerTask('default', ['qunit', 'clean', 'concat', 'uglify']);
+  grunt.registerTask('default', ['qunit', 'clean', 'concat', 'uglify', 'connect:server']);
   grunt.registerTask('build', ['clean', 'concat', 'uglify']);
   grunt.registerTask('test', ['qunit']);
   grunt.registerTask('watch', ['clean', 'concat', 'uglify']);
