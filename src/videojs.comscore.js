@@ -95,7 +95,7 @@
       this.url(metadata[keymap.url]);
     };
 
-// getters/setters
+    // getters/setters
     Clip.prototype.ad = function (flag) {
       if (flag) this.ns_st_ad = flag;
       return this.ns_st_ad
@@ -154,7 +154,7 @@
     var tracker = new ns_.StreamSense({}, 'http://b.scorecardresearch.com/p?c1=2&c2=' + id);
     var currentClip = null;
 
-// must happen before the clips get created
+    // must happen before the clips get created
     if (keymapOverride) {
       keymap = extend({}, keymap, keymapOverride);
     }
@@ -185,7 +185,7 @@
       tracker.notify(events.PAUSE, {}, player.currentTime() * 1000);
     });
 
-// replace the initializer with the plugin functionality
+    // replace the initializer with the plugin functionality
     player.comscore = {};
   };
 //------------------------------------------------------------
