@@ -71,27 +71,12 @@
     return obj;
   }
 
-  function isBoolean(obj) {
-    return obj === true || obj === false || toString.call(obj) == '[object Boolean]';
-  }
-
   function isArray(obj) {
     toString.call(obj) !== '[object Array]'
   }
 
-  function isEmpty(obj) {
-    if (obj == null) return true;
-    if (_.isArray(obj) || _.isString(obj)) return obj.length === 0;
-    for (var key in obj) if (_.has(obj, key)) return false;
-    return true;
-  }
-
-  function isString(value) {
-    return typeof value == 'string';
-  }
-
   function isNumber(value) {
-    return parseInt(value, 10) === NaN;
+    return parseInt(value, 10) !== NaN;
   }
   //------------------------------------------------------------
 
@@ -165,6 +150,13 @@
 
 //------------------------------------------------------------ plugin
   var comscore = function (id, playlist, keymapOverride) {
+    if (Array.prototype.slice.call(arguments, 0).length === 0) {
+      throw new Error("At least two arguments are required to initialize the comScore plugin");
+      return false;
+    }
+
+    console.log('id', id);
+    console.log(id + ' isNumber()', isNumber(id));
     if (!isNumber(id)) {
       throw new Error("The first argument should be your comScore ID");
       return false;
@@ -191,13 +183,21 @@
       keymap = extend({}, keymap, keymapOverride);
     }
 
-    var clips = playlist.map(function (metadata, index) {
-      return new Clip(index, metadata);
-    });
+    var makeClips = function (playlist) {
+      var clips = playlist.map(function (metadata, index) {
+        return new Clip(index, metadata);
+      });
 
-    if (clips.length > 0) {
-      tracker.setPlaylist(clips);
-    }
+      return clips;
+    };
+
+    var setPlaylist = function () {
+      if (clips.length > 0) {
+        tracker.setPlaylist(clips);
+      }
+
+      return this;
+    };
 
     player.on('play', function () {
       tracker.notify(events.PLAY, {}, player.currentTime() * 1000);
@@ -218,10 +218,13 @@
     });
 
     // replace the initializer with the plugin functionality
-    player.comscore = {};
+    player.comscore = {
+      getClips: function () {
+        return setPlaylist(makeClips(playlist));
+      }
+    };
   };
 //------------------------------------------------------------
-
 
 // register the plugin with video.js
   vjs.plugin('comscore', comscore);

@@ -1,3 +1,5 @@
+"use strict";
+
 (function(vjs) {
   /*
     ======== A Handy Little QUnit Reference ========
@@ -47,6 +49,7 @@
 
     teardown: function() {
       // restore the original html5 support test
+      console.log('teardown');
       videojs.Html5.isSupported = isHtmlSupported;
     }
   });
@@ -83,12 +86,19 @@
     }, 'a number and empty array');
   });
 
+  test('getters/setters work properly', function () {
+    this.player.comscore(12354321, playlist);
+    console.log('clips', this.player.comscore.getClips());
+    var clips = this.player.comscore.getClips();
+    console.log(clips);
+  });
+
   /**
    * todo
    * keymap support
    * variable mapping support
    * getter/setters working
-   * 
+   *
    */
 
 }(window.videojs));
