@@ -157,6 +157,7 @@
 
     console.log('id', id);
     console.log(id + ' isNumber()', isNumber(id));
+
     if (!isNumber(id)) {
       throw new Error("The first argument should be your comScore ID");
       return false;
@@ -177,6 +178,7 @@
     var player = this; // save a reference to the player instance
     var tracker = new ns_.StreamSense({}, 'http://b.scorecardresearch.com/p?c1=2&c2=' + id);
     var currentClip = null;
+    var clips = [];
 
     // must happen before the clips get created
     if (keymapOverride) {
@@ -191,7 +193,7 @@
       return clips;
     };
 
-    var setPlaylist = function () {
+    var setPlaylist = function (clips) {
       if (clips.length > 0) {
         tracker.setPlaylist(clips);
       }
@@ -199,6 +201,7 @@
       return this;
     };
 
+    //listeners
     player.on('play', function () {
       tracker.notify(events.PLAY, {}, player.currentTime() * 1000);
     });
@@ -210,7 +213,7 @@
     });
 
     player.on('ended', function () {
-      tracker.notify(events.END, {}, player.currentTime() * 1000);
+      tracker.notify(events.END, {}, currentClip.duration());
     });
 
     player.on('paused', function () {
@@ -223,6 +226,8 @@
         return setPlaylist(makeClips(playlist));
       }
     };
+		
+		clips = makeClips(playlist); //basically this is the init step
   };
 //------------------------------------------------------------
 

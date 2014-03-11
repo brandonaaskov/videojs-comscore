@@ -49,7 +49,6 @@
 
     teardown: function() {
       // restore the original html5 support test
-      console.log('teardown');
       videojs.Html5.isSupported = isHtmlSupported;
     }
   });
