@@ -122,3 +122,17 @@ player.comscore(1234567890, playlist, keymap);
 
 ## Release History
 0.1.0 : totally untested and unverified, but it appears to be working properly :)
+
+## Development
+I opted for `gulp` over `grunt` because I'm a much bigger fan of programming stuff with node streams than trying to declare everything I want through a big javascript config. Not for me.
+
+#### Prerequisites
+To get things up and running, simply `npm install` from the project's directory. You may need to install gulp globally with `npm install -g gulp` so that the command line utility can run.
+
+#### Compilation and Testing Server
+`gulp` takes care of this for you, but if you run
+
+### Tests
+
+# License
+This project uses the [Mozilla Public Foundation 2.0 License](http://www.mozilla.org/MPL/2.0/).

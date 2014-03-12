@@ -8,19 +8,13 @@
   "engines": {
     "node": ">= 0.8.0"
   },
-  "scripts": {
-    "test": "grunt test"
-  },
   "devDependencies": {
-    "grunt-contrib-qunit": "~0.2.0",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-uglify": "~0.2.0",
-    "grunt-contrib-watch": "~0.4.0",
-    "grunt-contrib-clean": "~0.4.0",
-    "grunt": "~0.4.2",
-    "grunt-contrib-connect": "^0.7.1",
     "lodash": "^2.4.1",
     "sinon": "^1.9.0",
-    "gulp": "^3.5.5"
+    "gulp": "^3.5.5",
+    "gulp-coffee": "^1.4.1",
+    "gulp-uglify": "^0.2.1",
+    "gulp-rename": "^1.2.0",
+    "connect": "^2.14.2"
   }
 }
