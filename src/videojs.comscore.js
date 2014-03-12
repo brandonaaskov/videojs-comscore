@@ -210,6 +210,9 @@
       getCurrentClip = function() {
         return getClipByUrl(player.currentSrc());
       };
+      player.on('firstplay', function() {
+        return console.log('first');
+      });
       player.on('play', function() {
         return tracker.notify(events.PLAY, {}, player.currentTime() * 1000);
       });
@@ -218,6 +221,9 @@
         currentClip.url(player.currentSrc());
         currentClip.duration(player.duration());
         return tracker.setClip(currentClip);
+      });
+      player.on('progress', function() {
+        return console.log('progress');
       });
       player.on('ended', function() {
         return tracker.notify(events.END, {}, currentClip.duration());

@@ -155,6 +155,9 @@
 
     # listeners
     # -------------------------
+    player.on 'firstplay', ->
+      console.log 'first'
+      
     player.on 'play', ->
       tracker.notify events.PLAY, {}, player.currentTime() * 1000
 
@@ -163,6 +166,9 @@
       currentClip.url player.currentSrc()
       currentClip.duration player.duration()
       tracker.setClip currentClip
+
+    player.on 'progress', ->
+      console.log 'progress'
 
     player.on 'ended', ->
       tracker.notify events.END, {}, currentClip.duration()
