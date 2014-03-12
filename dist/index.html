@@ -1,11 +1,11 @@
 <!doctype html>
 <html>
   <head>
-    <title>videojs-comscore Plugin Example</title>
+    <title>videojs-comscore plugin demo</title>
   </head>
 
   <!-- styles -->
-  <link rel="stylesheet" href="libs/video-js-4.1.0/video-js.css">
+  <link rel="stylesheet" href="../libs/video-js-4.1.0/video-js.css">
 
   <style>
   .example-description {
@@ -16,34 +16,37 @@
   </style>
 
   <!-- scripts -->
-  <script src="libs/video-js-4.1.0/video.js"></script>
-  <script src="libs/comscore/streamsense.min.js"></script>
-  <script src="src/videojs.comscore.js"></script>
+  <script src="../libs/video-js-4.1.0/video.js"></script>
+  <script src="../libs/comscore/streamsense.min.js"></script>
+  <script src="videojs.comscore.js"></script>
 
   <script type="text/javascript" charset="utf-8">
-  var video = document.querySelector('video'); // save a reference to the video element
-  var player = videojs(video); // save a reference to the video.js player for that element
-
-  // initialize the plugin with some custom options:
-  var playlist = [{
-    id: 45234532,
-    name: 'Zencoder test video',
-    publisher: 'Zencoder',
-    url: 'http://vjs.zencdn.net/v/oceans.mp4'
-  },
-  {
-    id: 'adas23490d8fasd9f8asd9f08ad0f',
-    name: 'Test Video',
-    show: 'Hampton Testing',
-    duration: 900000, // in ms
-    publisher: 'Brandon Aaskov',
-    ad: false,
-    url: 'https://s3-us-west-1.amazonaws.com/fullscreen-tv/uploads/balloon+jump+480p.mp4'
-  }];
-
   function initialize() {
+    var video = document.querySelector('video'); // save a reference to the video element
+    var player = videojs(video); // save a reference to the video.js player for that element
+
+    // initialize the plugin with some custom options:
+    var playlist = [{
+      id: 'adas23490d8fasd9f8asd9f08ad0f',
+      name: 'Test Video',
+      show: 'comScore Testing',
+      duration: 900000, // in ms
+      publisher: 'Brandon Aaskov',
+      ad: false,
+      url: 'https://s3-us-west-1.amazonaws.com/fullscreen-tv/uploads/balloon+jump+480p.mp4'
+    },
+    {
+      id: 45234532,
+      name: 'Zencoder test video',
+      publisher: 'Zencoder',
+      url: 'http://vjs.zencdn.net/v/oceans.mp4'
+    }];
+
     player.comscore(1234567890, playlist);
-  }
+    var clips = player.comscore.getClips();
+    console.log('clips for comscore', clips);
+    player.src(clips[0].url());
+  };
 
   window.onload = initialize;
   </script>
@@ -54,7 +57,11 @@
     the head of the document but you still need to configure and initialize the
     plugin.
   -->
-  <video class="video-js vjs-default-skin" controls></video>
+  <video
+    class="video-js vjs-default-skin"
+    width="1024"
+    height="576"
+    controls></video>
 
 </body>
 </html>

@@ -5,7 +5,7 @@
     This keymap defines how to map the internal keys (left-hand side) to the
     user's key name (right-hand side).
      */
-    var Clip, classification_types, comscore, extend, isArray, isNumber, keymap;
+    var Clip, classificationTypes, comscore, extend, isArray, isNumber, keymap;
     isArray = function(obj) {
       return toString.call(obj) === "[object Array]";
     };
@@ -39,7 +39,7 @@
       show: 'show',
       url: 'url'
     };
-    classification_types = {
+    classificationTypes = {
       video: {
         shortform: {
           premium: 'vc11',
@@ -66,6 +66,32 @@
       }
     };
     Clip = (function() {
+      var getLengthInMs;
+
+      Clip.prototype.ns_st_ad = null;
+
+      Clip.prototype.ns_st_cl = null;
+
+      Clip.prototype.ns_st_cn = null;
+
+      Clip.prototype.ns_st_ci = null;
+
+      Clip.prototype.ns_st_ep = null;
+
+      Clip.prototype.ns_st_pu = null;
+
+      Clip.prototype.ns_st_pr = null;
+
+      Clip.prototype.ns_st_cu = null;
+
+      getLengthInMs = function(length, inSeconds) {
+        if (inSeconds) {
+          return length * 1000;
+        } else {
+          return length;
+        }
+      };
+
       function Clip(index, metadata) {
         this.ad(metadata[keymap.ad]);
         this.duration(metadata[keymap.duration]);
@@ -79,18 +105,12 @@
 
       Clip.prototype.ad = function(flag) {
         if (flag) {
-          this.ns_st_ad = flag;
+          return this.ns_st_ad = flag;
         }
-        return this.ns_st_ad;
       };
 
       Clip.prototype.duration = function(length, in_seconds) {
-        if (length) {
-          this.ns_st_cl = in_seconds ? length * 1000 : void 0;
-        } else {
-          length;
-        }
-        return this.ns_st_cl;
+        return this.ns_st_cl = length;
       };
 
       Clip.prototype.index = function(index) {
@@ -146,8 +166,8 @@
       return Clip;
 
     })();
-    comscore = function(id, playlist, keymap_override) {
-      var clips, current_clip, events, initialize, make_clips, player, set_playlist, tracker;
+    comscore = function(id, playlist, keymapOverride) {
+      var clips, currentClip, events, getClipByUrl, getCurrentClip, initialize, makeClips, player, tracker;
       if (!isNumber(id)) {
         throw new Error('The first argument should be your comScore ID');
       }
@@ -162,51 +182,55 @@
       };
       player = this;
       tracker = new ns_.StreamSense({}, "http://b.scorecardresearch.com/p?c1=2&c2=" + id);
-      current_clip = null;
+      currentClip = null;
       clips = [];
-      if (keymap_override) {
-        keymap = extend({}, keymap, keymap_override);
+      if (keymapOverride) {
+        keymap = extend({}, keymap, keymapOverride);
       }
       initialize = function() {
-        return clips = make_clips(playlist);
+        clips = makeClips(playlist);
+        if (clips.length > 0) {
+          return tracker.setPlaylist(clips);
+        }
       };
-      make_clips = function(playlist) {
+      makeClips = function(playlist) {
         return playlist.map(function(metadata, index) {
           return new Clip(index, metadata);
         });
       };
-      set_playlist = function(clips) {
+      getClipByUrl = function(url) {
         var clip, _i, _len;
         for (_i = 0, _len = clips.length; _i < _len; _i++) {
           clip = clips[_i];
-          if (typeof clip !== 'Clip') {
-            throw new Error('expected an array of clips');
+          if (url === clip.url()) {
+            return clip;
           }
         }
-        if (clips.length > 0) {
-          tracker.setPlaylist(clips);
-        }
-        return this;
+      };
+      getCurrentClip = function() {
+        return getClipByUrl(player.currentSrc());
       };
       player.on('play', function() {
         return tracker.notify(events.PLAY, {}, player.currentTime() * 1000);
       });
-      player.on('loadeddata', function() {
-        current_clip = clips[0];
-        current_clip.url(player.currentSrc());
-        current_clip.duration(player.duration());
-        return tracker.setClip(current_clip);
+      player.on('durationchange', function() {
+        currentClip = getCurrentClip();
+        currentClip.url(player.currentSrc());
+        currentClip.duration(player.duration());
+        return tracker.setClip(currentClip);
       });
       player.on('ended', function() {
-        return tracker.notify(events.END, {}, current_clip.duration());
+        return tracker.notify(events.END, {}, currentClip.duration());
       });
-      player.on('paused', function() {
-        console.log("paused", player.currentTime());
+      player.on('pause', function() {
         return tracker.notify(events.PAUSE, {}, player.currentTime() * 1000);
       });
       player.comscore = {
         getClips: function() {
           return clips;
+        },
+        getCurrentClip: function() {
+          return getCurrentClip;
         }
       };
       return initialize();

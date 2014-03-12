@@ -37,6 +37,9 @@ gulp.task('compress', function() {
 gulp.task('copy', function () {
   gulp.src(paths.compiled)
     .pipe(gulp.dest('dist'));
+
+  gulp.src('src/index.html')
+    .pipe(gulp.dest('dist'));
 });
 
 // recompile coffeescript files on change
@@ -49,9 +52,6 @@ gulp.task('serve', create_static_server);
 
 // builds everything to the `dist` directory
 gulp.task('build', ['compile', 'copy', 'compress']);
-
-// runs a build and launches a server
-gulp.task('demo', ['build', 'serve']);
 
 // runs a build and launches a server
 gulp.task('default', ['build', 'watch', 'serve']);

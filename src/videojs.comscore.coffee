@@ -33,7 +33,7 @@
     url: 'url'
 
   # page 13 (http://cl.ly/UGkP)
-  classification_types =
+  classificationTypes =
     video:
       shortform:
         premium: 'vc11'
@@ -63,6 +63,17 @@
 
   #------------------------------------------------------------ Clip
   class Clip
+    ns_st_ad: null
+    ns_st_cl: null
+    ns_st_cn: null
+    ns_st_ci: null
+    ns_st_ep: null
+    ns_st_pu: null
+    ns_st_pr: null
+    ns_st_cu: null
+
+    getLengthInMs = (length, inSeconds) -> if inSeconds then length * 1000 else length
+
     constructor: (index, metadata) ->
       @ad metadata[keymap.ad]
       @duration metadata[keymap.duration]
@@ -75,13 +86,10 @@
 
     # getters/setters (could be more DRY, but I'm leaving it this way for clarity)
     # -------------------------
-    ad: (flag) ->
-      if flag then @ns_st_ad = flag
-      return @ns_st_ad
+    ad: (flag) -> @ns_st_ad = flag if flag
 
     duration: (length, in_seconds) ->
-      if length then @ns_st_cl = if in_seconds then length * 1000 else length
-      return @ns_st_cl
+      @ns_st_cl = length
 
     index: (index) ->
       if index then @ns_st_cn = index
@@ -117,7 +125,7 @@
   #------------------------------------------------------------
 
   #------------------------------------------------------------ plugin
-  comscore = (id, playlist, keymap_override) ->
+  comscore = (id, playlist, keymapOverride) ->
     throw new Error 'The first argument should be your comScore ID' unless isNumber(id)
     throw new Error 'The second argument should be an array (can be empty)' unless isArray(playlist)
 
@@ -129,43 +137,43 @@
 
     player = @ # save a reference to the player instance
     tracker = new ns_.StreamSense {}, "http://b.scorecardresearch.com/p?c1=2&c2=#{id}"
-    current_clip = null
+    currentClip = null
     clips = []
-    keymap = extend {}, keymap, keymap_override if keymap_override
+    keymap = extend {}, keymap, keymapOverride if keymapOverride
 
-    initialize = -> clips = make_clips(playlist)
-
-    make_clips = (playlist) -> playlist.map (metadata, index) -> new Clip(index, metadata)
-
-    set_playlist = (clips) ->
-      for clip in clips
-        throw new Error 'expected an array of clips' unless typeof clip is 'Clip'
-
+    initialize = ->
+      clips = makeClips(playlist)
       tracker.setPlaylist clips if clips.length > 0
-      return @
+
+    makeClips = (playlist) -> playlist.map (metadata, index) -> new Clip(index, metadata)
+
+    getClipByUrl = (url) ->
+      for clip in clips
+        return clip if url is clip.url()
+
+    getCurrentClip = -> getClipByUrl(player.currentSrc())
 
     # listeners
     # -------------------------
     player.on 'play', ->
       tracker.notify events.PLAY, {}, player.currentTime() * 1000
 
-    player.on 'loadeddata', ->
-      current_clip = clips[0]
-      current_clip.url player.currentSrc()
-      current_clip.duration player.duration()
-      tracker.setClip current_clip
+    player.on 'durationchange', ->
+      currentClip = getCurrentClip()
+      currentClip.url player.currentSrc()
+      currentClip.duration player.duration()
+      tracker.setClip currentClip
 
     player.on 'ended', ->
-      tracker.notify events.END, {}, current_clip.duration()
+      tracker.notify events.END, {}, currentClip.duration()
 
-    player.on 'paused', ->
-      console.log "paused", player.currentTime()
+    player.on 'pause', ->
       tracker.notify events.PAUSE, {}, player.currentTime() * 1000
-
 
     # replace the initializer with the plugin functionality
     player.comscore =
       getClips: -> clips
+      getCurrentClip: -> getCurrentClip
 
     initialize()
   #------------------------------------------------------------ end plugin
