@@ -223,7 +223,7 @@
 
     })();
     comscore = function(id, playlist, keymapOverride) {
-      var clips, currentClip, currentPosition, end, events, getClipByUrl, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, tracker, updateLoadedClip;
+      var checkIfStalled, clips, currentClip, currentPosition, end, events, getClipByUrl, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, stallCounter, stalled, tracker, updateLoadedClip;
       if (!isNumber(id)) {
         throw new Error('The first argument should be your comScore ID');
       }
@@ -244,6 +244,8 @@
         keymap = extend({}, keymap, keymapOverride);
       }
       currentPosition = 0;
+      stalled = false;
+      stallCounter = 0;
       initialize = function() {
         clips = makeClips(playlist);
         if (clips.length > 0) {
@@ -271,19 +273,24 @@
         return Math.round(player.currentTime() * 1000);
       };
       updateLoadedClip = function() {
-        var key, mapped, value;
         currentClip = getCurrentClip();
         currentClip.url(player.currentSrc());
         currentClip.duration(player.duration(), true);
-        mapped = {};
-        for (key in currentClip) {
-          value = currentClip[key];
-          if (currentClip.hasOwnProperty(key)) {
-            mapped[key] = value;
-          }
-        }
-        console.log(mapped);
         return tracker.setClip(currentClip);
+      };
+      checkIfStalled = function() {
+        if (!stalled && currentPosition === getCurrentTime() && stallCounter++ > 3) {
+          stalled = true;
+          stallCounter = 0;
+          tracker.notify(events.BUFFER, {}, currentPosition);
+          return true;
+        } else if (stalled && currentPosition !== getCurrentTime()) {
+          tracker.notify(events.PLAY, {}, currentPosition);
+          stalled = false;
+          stallCounter = 0;
+          return false;
+        }
+        return false;
       };
       play = function() {
         return tracker.notify(events.PLAY, {}, currentPosition);
@@ -295,6 +302,7 @@
         return tracker.notify(events.END, {}, currentClip.duration());
       };
       progress = function() {
+        checkIfStalled();
         return currentPosition = getCurrentTime();
       };
       player.on('durationchange', function() {
@@ -315,7 +323,6 @@
         getCurrentClip: getCurrentClip,
         updateLoadedClip: updateLoadedClip
       };
-      window.comscore = player.comscore;
       return initialize();
     };
     return vjs.plugin("comscore", comscore);

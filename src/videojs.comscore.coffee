@@ -187,6 +187,8 @@
     clips = []
     keymap = extend {}, keymap, keymapOverride if keymapOverride
     currentPosition = 0
+    stalled = false
+    stallCounter = 0
 
     initialize = ->
       clips = makeClips(playlist)
@@ -207,22 +209,28 @@
       currentClip = getCurrentClip()
       currentClip.url player.currentSrc()
       currentClip.duration player.duration(), true
-
-      mapped = {}
-      for key, value of currentClip
-        if currentClip.hasOwnProperty(key)
-          mapped[key] = value
-
-      console.log mapped
-
       tracker.setClip currentClip
 
-    play = ->
-      tracker.notify events.PLAY, {}, currentPosition
-    pause = ->
-      tracker.notify events.PAUSE, {}, currentPosition
+    checkIfStalled = ->
+      if !stalled and currentPosition is getCurrentTime() and stallCounter++ > 3
+        stalled = true
+        stallCounter = 0
+        tracker.notify events.BUFFER, {}, currentPosition
+        return true
+      else if stalled and currentPosition isnt getCurrentTime()
+        tracker.notify events.PLAY, {}, currentPosition
+        stalled = false
+        stallCounter = 0
+        return false
+
+      return false
+
+    play = -> tracker.notify events.PLAY, {}, currentPosition
+    pause = -> tracker.notify events.PAUSE, {}, currentPosition
     end = -> tracker.notify events.END, {}, currentClip.duration()
-    progress = -> currentPosition = getCurrentTime()
+    progress = ->
+      checkIfStalled()
+      currentPosition = getCurrentTime()
 
     # listeners
     # -------------------------
@@ -243,7 +251,6 @@
       getCurrentClip: getCurrentClip
       updateLoadedClip: updateLoadedClip
 
-    window.comscore = player.comscore # todo remove
     initialize()
   #------------------------------------------------------------ end plugin
 

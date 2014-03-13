@@ -70,8 +70,6 @@
       }
     };
     Clip = (function() {
-      var getLengthInMs;
-
       Clip.prototype.ns_st_ad = null;
 
       Clip.prototype.ns_st_cl = null;
@@ -87,14 +85,6 @@
       Clip.prototype.ns_st_pr = null;
 
       Clip.prototype.ns_st_cu = null;
-
-      getLengthInMs = function(length, inSeconds) {
-        if (inSeconds) {
-          return length * 1000;
-        } else {
-          return length;
-        }
-      };
 
       function Clip(index, metadata) {
         this.ad(metadata[keymap.ad]);
@@ -196,9 +186,28 @@
           return this.duration() / 1000 >= 10;
         };
         if (this.ad) {
-
+          return classificationTypes.ad.preroll;
         } else {
-
+          if (this.live()) {
+            if (this.premium()) {
+              return classificationTypes.video.live.premium;
+            } else {
+              return classificationTypes.video.live.ugc;
+            }
+          }
+          if (isLongForm()) {
+            if (this.premium()) {
+              return classificationTypes.video.longform.premium;
+            } else {
+              return classificationTypes.video.longform.ugc;
+            }
+          } else {
+            if (this.premium()) {
+              return classificationTypes.video.shortform.premium;
+            } else {
+              return classificationTypes.video.shortform.ugc;
+            }
+          }
         }
       };
 
@@ -214,7 +223,7 @@
 
     })();
     comscore = function(id, playlist, keymapOverride) {
-      var clips, currentClip, currentPosition, end, events, getClipByUrl, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, tracker, updateLoadedClip;
+      var checkIfStalled, clips, currentClip, currentPosition, end, events, getClipByUrl, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, stallCounter, stalled, tracker, updateLoadedClip;
       if (!isNumber(id)) {
         throw new Error('The first argument should be your comScore ID');
       }
@@ -235,6 +244,8 @@
         keymap = extend({}, keymap, keymapOverride);
       }
       currentPosition = 0;
+      stalled = false;
+      stallCounter = 0;
       initialize = function() {
         clips = makeClips(playlist);
         if (clips.length > 0) {
@@ -267,6 +278,20 @@
         currentClip.duration(player.duration(), true);
         return tracker.setClip(currentClip);
       };
+      checkIfStalled = function() {
+        if (!stalled && currentPosition === getCurrentTime() && stallCounter++ > 3) {
+          stalled = true;
+          stallCounter = 0;
+          tracker.notify(events.BUFFER, {}, currentPosition);
+          return true;
+        } else if (stalled && currentPosition !== getCurrentTime()) {
+          tracker.notify(events.PLAY, {}, currentPosition);
+          stalled = false;
+          stallCounter = 0;
+          return false;
+        }
+        return false;
+      };
       play = function() {
         return tracker.notify(events.PLAY, {}, currentPosition);
       };
@@ -277,6 +302,7 @@
         return tracker.notify(events.END, {}, currentClip.duration());
       };
       progress = function() {
+        checkIfStalled();
         return currentPosition = getCurrentTime();
       };
       player.on('durationchange', function() {
