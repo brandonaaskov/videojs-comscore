@@ -23,6 +23,9 @@
 
   keymap =
     ad: 'ad'
+    premium: 'premium'
+    ugc: 'ugc'
+    live: 'live'
     duration: 'duration'
     index: 'index'
     id: 'id'
@@ -30,6 +33,7 @@
     publisher: 'publisher'
     show: 'show'
     url: 'url'
+    classification: 'classificaiton' # only use this if you absolutely know what this is supposed to be
 
   # page 13 (http://cl.ly/UGkP)
   classificationTypes =
@@ -71,10 +75,10 @@
     ns_st_pr: null
     ns_st_cu: null
 
-    getLengthInMs = (length, inSeconds) -> if inSeconds then length * 1000 else length
-
     constructor: (index, metadata) ->
       @ad metadata[keymap.ad]
+      @premium metadata[keymap.premium]
+      @ugc metadata[keymap.ugc]
       @duration metadata[keymap.duration]
       @index index
       @id metadata[keymap.id]
@@ -82,10 +86,25 @@
       @publisher metadata[keymap.publisher]
       @show metadata[keymap.show]
       @url metadata[keymap.url]
+      @classification metadata[keymap.url]
 
     # getters/setters (could be more DRY, but I'm leaving it this way for clarity)
     # -------------------------
-    ad: (flag) -> @ns_st_ad = flag if flag
+    ad: (flag) ->
+      if flag then @ns_st_ad = flag
+      return @ns_st_ad
+
+    premium: (flag) ->
+      if flag then @premium = flag
+      return @premium
+
+    ugc: (flag) ->
+      if flag then @premium = !flag
+      return @premium
+
+    live: (flag) ->
+      if flag then @live = flag
+      return @live
 
     duration: (length, inSeconds) ->
       if inSeconds then length = length * 1000
@@ -115,6 +134,32 @@
     url: (url) ->
       if url then @ns_st_cu = url
       return @ns_st_cu
+
+    classification: ->
+      # long form is defined as 10 minutes or greater
+      isLongForm = -> @duration()/1000 >= 10
+
+      if @ad # if it's an ad
+        # for now, if it's an ad we're just gonna call it a preroll all the time
+        return classificationTypes.ad.preroll
+      else # if it's content
+        if @live()
+          if @premium()
+            return classificationTypes.video.live.premium
+          else
+            return classificationTypes.video.live.ugc
+
+        if isLongForm()
+          if @premium()
+            return classificationTypes.video.longform.premium
+          else
+            return classificationTypes.video.longform.ugc
+        else
+          if @premium()
+            return classificationTypes.video.shortform.premium
+          else
+            return classificationTypes.video.shortform.ugc
+
 
     ###
     todo support these as well
@@ -162,6 +207,14 @@
       currentClip = getCurrentClip()
       currentClip.url player.currentSrc()
       currentClip.duration player.duration(), true
+
+      mapped = {}
+      for key, value of currentClip
+        if currentClip.hasOwnProperty(key)
+          mapped[key] = value
+
+      console.log mapped
+
       tracker.setClip currentClip
 
     play = ->
@@ -190,6 +243,7 @@
       getCurrentClip: getCurrentClip
       updateLoadedClip: updateLoadedClip
 
+    window.comscore = player.comscore # todo remove
     initialize()
   #------------------------------------------------------------ end plugin
 

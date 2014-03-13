@@ -31,13 +31,17 @@
     };
     keymap = {
       ad: 'ad',
+      premium: 'premium',
+      ugc: 'ugc',
+      live: 'live',
       duration: 'duration',
       index: 'index',
       id: 'id',
       name: 'name',
       publisher: 'publisher',
       show: 'show',
-      url: 'url'
+      url: 'url',
+      classification: 'classificaiton'
     };
     classificationTypes = {
       video: {
@@ -94,6 +98,8 @@
 
       function Clip(index, metadata) {
         this.ad(metadata[keymap.ad]);
+        this.premium(metadata[keymap.premium]);
+        this.ugc(metadata[keymap.ugc]);
         this.duration(metadata[keymap.duration]);
         this.index(index);
         this.id(metadata[keymap.id]);
@@ -101,22 +107,45 @@
         this.publisher(metadata[keymap.publisher]);
         this.show(metadata[keymap.show]);
         this.url(metadata[keymap.url]);
+        this.classification(metadata[keymap.url]);
       }
 
       Clip.prototype.ad = function(flag) {
         if (flag) {
-          return this.ns_st_ad = flag;
+          this.ns_st_ad = flag;
         }
+        return this.ns_st_ad;
+      };
+
+      Clip.prototype.premium = function(flag) {
+        if (flag) {
+          this.premium = flag;
+        }
+        return this.premium;
+      };
+
+      Clip.prototype.ugc = function(flag) {
+        if (flag) {
+          this.premium = !flag;
+        }
+        return this.premium;
+      };
+
+      Clip.prototype.live = function(flag) {
+        if (flag) {
+          this.live = flag;
+        }
+        return this.live;
       };
 
       Clip.prototype.duration = function(length, inSeconds) {
-        var _ref;
-        if (length) {
-          length = (_ref = inSeconds) != null ? _ref : length * {
-            1000: length
-          };
+        if (inSeconds) {
+          length = length * 1000;
         }
-        return this.ns_st_cl = Math.round(length);
+        if (length) {
+          this.ns_st_cl = Math.round(length);
+        }
+        return this.ns_st_cl;
       };
 
       Clip.prototype.index = function(index) {
@@ -161,6 +190,18 @@
         return this.ns_st_cu;
       };
 
+      Clip.prototype.classification = function() {
+        var isLongForm;
+        isLongForm = function() {
+          return this.duration() / 1000 >= 10;
+        };
+        if (this.ad) {
+
+        } else {
+
+        }
+      };
+
 
       /*
       todo support these as well
@@ -173,7 +214,7 @@
 
     })();
     comscore = function(id, playlist, keymapOverride) {
-      var clips, currentClip, end, events, getClipByUrl, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, tracker, updateLoadedClip;
+      var clips, currentClip, currentPosition, end, events, getClipByUrl, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, tracker, updateLoadedClip;
       if (!isNumber(id)) {
         throw new Error('The first argument should be your comScore ID');
       }
@@ -193,6 +234,7 @@
       if (keymapOverride) {
         keymap = extend({}, keymap, keymapOverride);
       }
+      currentPosition = 0;
       initialize = function() {
         clips = makeClips(playlist);
         if (clips.length > 0) {
@@ -222,38 +264,37 @@
       updateLoadedClip = function() {
         currentClip = getCurrentClip();
         currentClip.url(player.currentSrc());
-        currentClip.duration(player.duration());
+        currentClip.duration(player.duration(), true);
         return tracker.setClip(currentClip);
       };
       play = function() {
-        return tracker.notify(events.PLAY, {}, getCurrentTime());
+        return tracker.notify(events.PLAY, {}, currentPosition);
       };
       pause = function() {
-        return tracker.notify(events.PAUSE, {}, getCurrentTime());
+        return tracker.notify(events.PAUSE, {}, currentPosition);
       };
       end = function() {
         return tracker.notify(events.END, {}, currentClip.duration());
       };
+      progress = function() {
+        return currentPosition = getCurrentTime();
+      };
       player.on('durationchange', function() {
         return updateLoadedClip();
       });
-      player.on('play', function() {
-        return play();
-      });
-      player.on('ended', function() {
-        return end();
-      });
-      player.on('pause', function() {
-        return pause();
-      });
+      player.on('play', play);
+      player.on('ended', end);
+      player.on('pause', pause);
+      player.on('progress', progress);
       player.comscore = {
+        play: play,
+        pause: pause,
+        end: end,
+        progress: progress,
         getClips: function() {
           return clips;
         },
         getCurrentClip: getCurrentClip,
-        play: play,
-        pause: pause,
-        end: end,
         updateLoadedClip: updateLoadedClip
       };
       return initialize();

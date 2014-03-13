@@ -31,13 +31,17 @@
     };
     keymap = {
       ad: 'ad',
+      premium: 'premium',
+      ugc: 'ugc',
+      live: 'live',
       duration: 'duration',
       index: 'index',
       id: 'id',
       name: 'name',
       publisher: 'publisher',
       show: 'show',
-      url: 'url'
+      url: 'url',
+      classification: 'classificaiton'
     };
     classificationTypes = {
       video: {
@@ -66,8 +70,6 @@
       }
     };
     Clip = (function() {
-      var getLengthInMs;
-
       Clip.prototype.ns_st_ad = null;
 
       Clip.prototype.ns_st_cl = null;
@@ -84,16 +86,10 @@
 
       Clip.prototype.ns_st_cu = null;
 
-      getLengthInMs = function(length, inSeconds) {
-        if (inSeconds) {
-          return length * 1000;
-        } else {
-          return length;
-        }
-      };
-
       function Clip(index, metadata) {
         this.ad(metadata[keymap.ad]);
+        this.premium(metadata[keymap.premium]);
+        this.ugc(metadata[keymap.ugc]);
         this.duration(metadata[keymap.duration]);
         this.index(index);
         this.id(metadata[keymap.id]);
@@ -101,12 +97,35 @@
         this.publisher(metadata[keymap.publisher]);
         this.show(metadata[keymap.show]);
         this.url(metadata[keymap.url]);
+        this.classification(metadata[keymap.url]);
       }
 
       Clip.prototype.ad = function(flag) {
         if (flag) {
-          return this.ns_st_ad = flag;
+          this.ns_st_ad = flag;
         }
+        return this.ns_st_ad;
+      };
+
+      Clip.prototype.premium = function(flag) {
+        if (flag) {
+          this.premium = flag;
+        }
+        return this.premium;
+      };
+
+      Clip.prototype.ugc = function(flag) {
+        if (flag) {
+          this.premium = !flag;
+        }
+        return this.premium;
+      };
+
+      Clip.prototype.live = function(flag) {
+        if (flag) {
+          this.live = flag;
+        }
+        return this.live;
       };
 
       Clip.prototype.duration = function(length, inSeconds) {
@@ -159,6 +178,37 @@
           this.ns_st_cu = url;
         }
         return this.ns_st_cu;
+      };
+
+      Clip.prototype.classification = function() {
+        var isLongForm;
+        isLongForm = function() {
+          return this.duration() / 1000 >= 10;
+        };
+        if (this.ad) {
+          return classificationTypes.ad.preroll;
+        } else {
+          if (this.live()) {
+            if (this.premium()) {
+              return classificationTypes.video.live.premium;
+            } else {
+              return classificationTypes.video.live.ugc;
+            }
+          }
+          if (isLongForm()) {
+            if (this.premium()) {
+              return classificationTypes.video.longform.premium;
+            } else {
+              return classificationTypes.video.longform.ugc;
+            }
+          } else {
+            if (this.premium()) {
+              return classificationTypes.video.shortform.premium;
+            } else {
+              return classificationTypes.video.shortform.ugc;
+            }
+          }
+        }
       };
 
 
@@ -221,9 +271,18 @@
         return Math.round(player.currentTime() * 1000);
       };
       updateLoadedClip = function() {
+        var key, mapped, value;
         currentClip = getCurrentClip();
         currentClip.url(player.currentSrc());
         currentClip.duration(player.duration(), true);
+        mapped = {};
+        for (key in currentClip) {
+          value = currentClip[key];
+          if (currentClip.hasOwnProperty(key)) {
+            mapped[key] = value;
+          }
+        }
+        console.log(mapped);
         return tracker.setClip(currentClip);
       };
       play = function() {
@@ -256,6 +315,7 @@
         getCurrentClip: getCurrentClip,
         updateLoadedClip: updateLoadedClip
       };
+      window.comscore = player.comscore;
       return initialize();
     };
     return vjs.plugin("comscore", comscore);
