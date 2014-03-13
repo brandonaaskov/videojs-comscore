@@ -165,10 +165,8 @@
       tracker.setClip currentClip
 
     play = ->
-      console.log 'seeked', currentPosition if currentPosition
       tracker.notify events.PLAY, {}, currentPosition
     pause = ->
-      console.log 'play', currentPosition
       tracker.notify events.PAUSE, {}, currentPosition
     end = -> tracker.notify events.END, {}, currentClip.duration()
     progress = -> currentPosition = getCurrentTime()

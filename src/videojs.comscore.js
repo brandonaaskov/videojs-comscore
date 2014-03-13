@@ -227,13 +227,9 @@
         return tracker.setClip(currentClip);
       };
       play = function() {
-        if (currentPosition) {
-          console.log('seeked', currentPosition);
-        }
         return tracker.notify(events.PLAY, {}, currentPosition);
       };
       pause = function() {
-        console.log('play', currentPosition);
         return tracker.notify(events.PAUSE, {}, currentPosition);
       };
       end = function() {
