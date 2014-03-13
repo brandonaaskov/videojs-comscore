@@ -109,8 +109,14 @@
         }
       };
 
-      Clip.prototype.duration = function(length, in_seconds) {
-        return this.ns_st_cl = length;
+      Clip.prototype.duration = function(length, inSeconds) {
+        if (inSeconds) {
+          length = length * 1000;
+        }
+        if (length) {
+          this.ns_st_cl = Math.round(length);
+        }
+        return this.ns_st_cl;
       };
 
       Clip.prototype.index = function(index) {
@@ -167,7 +173,7 @@
 
     })();
     comscore = function(id, playlist, keymapOverride) {
-      var clips, currentClip, events, getClipByUrl, getCurrentClip, initialize, makeClips, player, tracker;
+      var clips, currentClip, currentPosition, end, events, getClipByUrl, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, tracker, updateLoadedClip;
       if (!isNumber(id)) {
         throw new Error('The first argument should be your comScore ID');
       }
@@ -187,6 +193,7 @@
       if (keymapOverride) {
         keymap = extend({}, keymap, keymapOverride);
       }
+      currentPosition = 0;
       initialize = function() {
         clips = makeClips(playlist);
         if (clips.length > 0) {
@@ -210,34 +217,48 @@
       getCurrentClip = function() {
         return getClipByUrl(player.currentSrc());
       };
-      player.on('firstplay', function() {
-        return console.log('first');
-      });
-      player.on('play', function() {
-        return tracker.notify(events.PLAY, {}, player.currentTime() * 1000);
-      });
-      player.on('durationchange', function() {
+      getCurrentTime = function() {
+        return Math.round(player.currentTime() * 1000);
+      };
+      updateLoadedClip = function() {
         currentClip = getCurrentClip();
         currentClip.url(player.currentSrc());
-        currentClip.duration(player.duration());
+        currentClip.duration(player.duration(), true);
         return tracker.setClip(currentClip);
-      });
-      player.on('progress', function() {
-        return console.log('progress');
-      });
-      player.on('ended', function() {
+      };
+      play = function() {
+        if (currentPosition) {
+          console.log('seeked', currentPosition);
+        }
+        return tracker.notify(events.PLAY, {}, currentPosition);
+      };
+      pause = function() {
+        console.log('play', currentPosition);
+        return tracker.notify(events.PAUSE, {}, currentPosition);
+      };
+      end = function() {
         return tracker.notify(events.END, {}, currentClip.duration());
+      };
+      progress = function() {
+        return currentPosition = getCurrentTime();
+      };
+      player.on('durationchange', function() {
+        return updateLoadedClip();
       });
-      player.on('pause', function() {
-        return tracker.notify(events.PAUSE, {}, player.currentTime() * 1000);
-      });
+      player.on('play', play);
+      player.on('ended', end);
+      player.on('pause', pause);
+      player.on('progress', progress);
       player.comscore = {
+        play: play,
+        pause: pause,
+        end: end,
+        progress: progress,
         getClips: function() {
           return clips;
         },
-        getCurrentClip: function() {
-          return getCurrentClip;
-        }
+        getCurrentClip: getCurrentClip,
+        updateLoadedClip: updateLoadedClip
       };
       return initialize();
     };

@@ -17,6 +17,7 @@ function create_static_server () {
     .use(connect.static(__dirname));
 
   http.createServer(app).listen(3000);
+  console.log('server running on localhost:3000');
 }
 
 //compiles coffee script files

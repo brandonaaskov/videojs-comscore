@@ -1,5 +1,4 @@
 ((vjs) ->
-
   #------------------------------------------------------------ private
   ###
   This keymap defines how to map the internal keys (left-hand side) to the
@@ -88,8 +87,10 @@
     # -------------------------
     ad: (flag) -> @ns_st_ad = flag if flag
 
-    duration: (length, in_seconds) ->
-      @ns_st_cl = length
+    duration: (length, inSeconds) ->
+      if inSeconds then length = length * 1000
+      if length then @ns_st_cl = Math.round(length)
+      return @ns_st_cl
 
     index: (index) ->
       if index then @ns_st_cn = index
@@ -140,12 +141,14 @@
     currentClip = null
     clips = []
     keymap = extend {}, keymap, keymapOverride if keymapOverride
+    currentPosition = 0
 
     initialize = ->
       clips = makeClips(playlist)
       tracker.setPlaylist clips if clips.length > 0
 
-    makeClips = (playlist) -> playlist.map (metadata, index) -> new Clip(index, metadata)
+    makeClips = (playlist) ->
+      return playlist.map (metadata, index) -> new Clip(index, metadata)
 
     getClipByUrl = (url) ->
       for clip in clips
@@ -153,30 +156,40 @@
 
     getCurrentClip = -> getClipByUrl(player.currentSrc())
 
-    play = -> tracker.notify events.PLAY, {}, player.currentTime() * 1000
-    pause = -> tracker.notify events.PAUSE, {}, player.currentTime() * 1000
-    end = -> tracker.notify events.END, {}, currentClip.duration()
+    getCurrentTime = -> Math.round(player.currentTime() * 1000)
+
     updateLoadedClip = ->
       currentClip = getCurrentClip()
       currentClip.url player.currentSrc()
-      currentClip.duration player.duration()
+      currentClip.duration player.duration(), true
       tracker.setClip currentClip
+
+    play = ->
+      console.log 'seeked', currentPosition if currentPosition
+      tracker.notify events.PLAY, {}, currentPosition
+    pause = ->
+      console.log 'play', currentPosition
+      tracker.notify events.PAUSE, {}, currentPosition
+    end = -> tracker.notify events.END, {}, currentClip.duration()
+    progress = -> currentPosition = getCurrentTime()
 
     # listeners
     # -------------------------
     player.on 'durationchange', -> updateLoadedClip()
-    player.on 'play', -> play()
-    player.on 'ended', -> end()
-    player.on 'pause', -> pause()
+    player.on 'play', play
+    player.on 'ended', end
+    player.on 'pause', pause
+    player.on 'progress', progress
 
-    # exposing our api for public use
+    # exposing the public api
     # -------------------------
     player.comscore =
-      getClips: -> clips
-      getCurrentClip: getCurrentClip
       play: play
       pause: pause
       end: end
+      progress: progress
+      getClips: -> clips
+      getCurrentClip: getCurrentClip
       updateLoadedClip: updateLoadedClip
 
     initialize()
