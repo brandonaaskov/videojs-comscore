@@ -153,33 +153,31 @@
 
     getCurrentClip = -> getClipByUrl(player.currentSrc())
 
-    # listeners
-    # -------------------------
-    player.on 'firstplay', ->
-      console.log 'first'
-      
-    player.on 'play', ->
-      tracker.notify events.PLAY, {}, player.currentTime() * 1000
-
-    player.on 'durationchange', ->
+    play = -> tracker.notify events.PLAY, {}, player.currentTime() * 1000
+    pause = -> tracker.notify events.PAUSE, {}, player.currentTime() * 1000
+    end = -> tracker.notify events.END, {}, currentClip.duration()
+    updateLoadedClip = ->
       currentClip = getCurrentClip()
       currentClip.url player.currentSrc()
       currentClip.duration player.duration()
       tracker.setClip currentClip
 
-    player.on 'progress', ->
-      console.log 'progress'
+    # listeners
+    # -------------------------
+    player.on 'durationchange', -> updateLoadedClip()
+    player.on 'play', -> play()
+    player.on 'ended', -> end()
+    player.on 'pause', -> pause()
 
-    player.on 'ended', ->
-      tracker.notify events.END, {}, currentClip.duration()
-
-    player.on 'pause', ->
-      tracker.notify events.PAUSE, {}, player.currentTime() * 1000
-
-    # replace the initializer with the plugin functionality
+    # exposing our api for public use
+    # -------------------------
     player.comscore =
       getClips: -> clips
-      getCurrentClip: -> getCurrentClip
+      getCurrentClip: getCurrentClip
+      play: play
+      pause: pause
+      end: end
+      updateLoadedClip: updateLoadedClip
 
     initialize()
   #------------------------------------------------------------ end plugin
