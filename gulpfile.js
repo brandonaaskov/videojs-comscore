@@ -73,4 +73,4 @@ gulp.task('build', ['compile', 'copy', 'compress']);
 gulp.task('test', ['build', 'qunit']);
 
 // runs a build and launches a server
-gulp.task('default', ['build', 'test', 'watch', 'serve']);
+gulp.task('default', ['test', 'watch', 'serve']);

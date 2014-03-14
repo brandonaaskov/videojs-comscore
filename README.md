@@ -28,6 +28,8 @@ videojs('video', {}, function() {
 
 comScore has the notion of segments (aka clips), and those segments can be ads, videos, audio-only, etc. comScore tracks these pieces of content as clips, and differentiates between ads and content via by sending an extra param or not, respectively. So, you may have five clips to comprise only one "episode" of a show, for instance. comScore often refers to a show name as either the "program name" or "series name."
 
+The "classification", or "classification type" is a special code that gets sent to comScore. Which code is sent is dependent on a few main factors: if it's an ad or not, if it's long form or not (longer than 10 minutes), if it's premium or user-generated, and if it's live or not. There are [some other things too](blob/master/src/videojs.comscore.coffee#L39), but that covers the most common stuff.
+
 ## Documentation
 
 When initializing the comScore plugin, you need to provide it with at least two arguments. The first argument will be your comScore Client ID that is unique to your comScore account. The second argument will be a playlist of clips (we'll get to that soon), and the third is an optional keymap (we'll get to that last since, you know... it's optional).
@@ -61,7 +63,7 @@ If you don't use a keymap, it means that the data structure in your playlist arr
 Then the plugin will expect that each clip item in the playlist array will have a key called `videoLocation` and another called `displayName`, and that the values should map to what the plugin is calling `url` and `name`. Thus, the right values get sent to comScore.
 
 ## Examples
-Check out example.html to see videojs-comscore in action.
+Run `gulp` and then load up [http://localhost:3000/src/index.html](http://localhost:3000/src/index.html) to see a player in action. If you're looking for examples for [keymapping](#keymap-object), then check out [a full keymap example in the tests folder](blob/master/tests/mocks/keymappedPlaylist.js) and check out the [default keymap](blob/master/src/videojs.comscore.coffee#L24) for reference.
 
 #### basic setup
 ```javascript
@@ -120,19 +122,35 @@ var keymap = {
 player.comscore(1234567890, playlist, keymap);
 ```
 
+## Classification Types
+[As described above](#lingo), the classification type is required by comScore. If you don't set anything, we send the default value. However, if you'd like to send the _proper_ value, you can easily do so by specifying the following properties in your playlist items:
+* ad (true/false)
+* ugc (true/false)
+* premium (true/false)
+* duration (in milliseconds)
+* live (true/false)
+
 ## Release History
-0.1.0 : totally untested and unverified, but it appears to be working properly :)
+* 0.2.0
+tested and works much better, but still unverified from comScore (stay tuned...)
+
+* 0.1.0
+totally untested and unverified, but it appears to be working properly :)
 
 ## Development
-I opted for `gulp` over `grunt` because I'm a much bigger fan of programming stuff with node streams than trying to declare everything I want through a big javascript config. Not for me.
+I opted for `gulp` over `grunt` because I'm a much bigger fan of programming stuff with node streams than trying to declare everything I want through a big javascript config. Tests are via QUnit, which wouldn't have been my first choice but that's what got setup during the `grunt-init videojs` phase so I just stuck with it.
 
 #### Prerequisites
 To get things up and running, simply `npm install` from the project's directory. You may need to install gulp globally with `npm install -g gulp` so that the command line utility can run.
 
 #### Compilation and Testing Server
-`gulp` takes care of this for you, but if you run
+`gulp` takes care of this for you, but the common tasks are:
+`gulp` (tests (see below), watches ('scripts' and 'tests' folders) and starts a server
+`gulp test` (builds (see below) and tests (in qunit))
+`gulp build` (compiles, copies (to dist) compresses (in dist))
 
 ### Tests
+You can run tests from the command line with `gulp test` though `gulp` does that by default as well (see above). Since they're QUnit tests, you can load them up in a browser as well. Assuming you have a server running after running `gulp`, you can just go to [http://localhost:3000/tests/index.html](http://localhost:3000/tests/index.html).
 
 # License
 This project uses the [Mozilla Public Foundation 2.0 License](http://www.mozilla.org/MPL/2.0/).
