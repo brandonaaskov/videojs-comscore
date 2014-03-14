@@ -1,6 +1,8 @@
 # videojs-comscore
 
-comScore support with videojs players.
+comScore plugin for videojs players. Wow! Much docs!
+
+![Dependency Status](https://david-dm.org/brandonaaskov/videojs-comscore.png)
 
 ## Getting Started
 Download [videojs](http://www.videojs.com/)
