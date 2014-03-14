@@ -17,7 +17,7 @@
     "gulp-uglify": "^0.2.1",
     "gulp-rename": "^1.2.0",
     "connect": "^2.14.2",
-    "gulp-qunit": "^0.2.1"
+    "gulp-qunit": "^0.3.0"
   },
   "license": "MPL"
 }
