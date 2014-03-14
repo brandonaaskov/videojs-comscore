@@ -153,7 +153,6 @@
         return classificationTypes.ad.preroll
       else # if it's content
         if @live() # live
-          debugger
           if @premium()
             @ns_st_ct = classificationTypes.video.live.premium
 

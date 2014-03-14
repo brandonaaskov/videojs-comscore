@@ -218,7 +218,6 @@
           return classificationTypes.ad.preroll;
         } else {
           if (this.live()) {
-            debugger;
             if (this.premium()) {
               this.ns_st_ct = classificationTypes.video.live.premium;
             }
