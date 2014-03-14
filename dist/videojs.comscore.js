@@ -246,19 +246,11 @@
         return this.ns_st_ct;
       };
 
-
-      /*
-      todo support these as well
-      var ns_st_pn = 'part number'; // identifies a segment of the content (increment after mid-roll ad)
-      var ns_st_tp = 'total parts'; // total segments (or 0 if no segments)
-      var ns_st_ct = 'classification type'; // 4-character ID which distinguishes advertisement stream types from content stream types
-       */
-
       return Clip;
 
     })();
     comscore = function(id, playlist, keymapOverride) {
-      var checkIfStalled, clips, currentClip, currentPosition, end, events, getClipByUrl, getClips, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, stallCounter, stalled, tracker, updateLoadedClip;
+      var buffer, checkIfStalled, clips, currentClip, currentPosition, end, events, getClipByUrl, getClips, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, stallCounter, stalled, tracker, updateLoadedClip;
       if (!isNumber(id)) {
         throw new Error('The first argument should be your comScore ID');
       }
@@ -317,31 +309,36 @@
         currentClip = getCurrentClip();
         currentClip.url(player.currentSrc());
         currentClip.duration(player.duration(), true);
-        console.log('setClip', currentClip);
         return tracker.setClip(currentClip);
       };
       checkIfStalled = function() {
-        if (!stalled && currentPosition === getCurrentTime() && stallCounter++ > 3) {
+        var definitivelyStalled;
+        definitivelyStalled = !stalled && stallCounter++ > 3;
+        if (definitivelyStalled && currentPosition === getCurrentTime()) {
           stalled = true;
           stallCounter = 0;
-          tracker.notify(events.BUFFER, {}, currentPosition);
+          buffer(currentPosition);
           return true;
         } else if (stalled && currentPosition !== getCurrentTime()) {
-          tracker.notify(events.PLAY, {}, currentPosition);
+          play(currentPosition);
           stalled = false;
           stallCounter = 0;
           return false;
         }
         return false;
       };
-      play = function() {
-        return tracker.notify(events.PLAY, {}, currentPosition);
+      play = function(position) {
+        console.log('position', position);
+        return tracker.notify(events.PLAY, {}, position);
       };
-      pause = function() {
-        return tracker.notify(events.PAUSE, {}, currentPosition);
+      pause = function(position) {
+        return tracker.notify(events.PAUSE, {}, position);
       };
-      end = function() {
-        return tracker.notify(events.END, {}, currentClip.duration());
+      end = function(duration) {
+        return tracker.notify(events.END, {}, duration);
+      };
+      buffer = function(position) {
+        return tracker.notify(events.BUFFER, {}, position);
       };
       progress = function() {
         checkIfStalled();
@@ -350,15 +347,21 @@
       player.on('durationchange', function() {
         return updateLoadedClip();
       });
-      player.on('play', play);
-      player.on('ended', end);
-      player.on('pause', pause);
+      player.on('play', function() {
+        return play(currentPosition);
+      });
+      player.on('ended', function() {
+        return end(currentClip.duration());
+      });
+      player.on('pause', function() {
+        return pause(currentPosition);
+      });
       player.on('progress', progress);
       player.comscore = {
         play: play,
         pause: pause,
         end: end,
-        progress: progress,
+        buffer: buffer,
         getClips: getClips,
         getCurrentClip: getCurrentClip,
         updateLoadedClip: updateLoadedClip,

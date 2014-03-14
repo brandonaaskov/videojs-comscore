@@ -1,6 +1,6 @@
 # videojs-comscore
 
-comScore plugin for videojs players. Wow! Much docs!
+It's a comScore plugin... for videojs players... I totally gave it away with the name, didn't I?
 
 ![Dependency Status](https://david-dm.org/brandonaaskov/videojs-comscore.png)
 
@@ -8,7 +8,6 @@ comScore plugin for videojs players. Wow! Much docs!
 Download [videojs](http://www.videojs.com/)
 
 In your web page:
-
 ```html
 <link rel="stylesheet" href="video-js.css">
 <video id="video"
@@ -26,7 +25,8 @@ videojs('video', {}, function() {
 </script>
 ```
 
-## Lingo
+## Lingo/Terminology
+Understanding some terminology really [helps avoid the pain](http://cl.ly/USlT).
 
 comScore has the notion of segments (aka clips), and those segments can be ads, videos, audio-only, etc. comScore tracks these pieces of content as clips, and differentiates between ads and content via by sending an extra param or not, respectively. So, you may have five clips to comprise only one "episode" of a show, for instance. comScore often refers to a show name as either the "program name" or "series name."
 
@@ -132,6 +132,27 @@ player.comscore(1234567890, playlist, keymap);
 * duration (in milliseconds)
 * live (true/false)
 
+[Would You Like to Know More?](http://www.youtube.com/watch?v=SMTz9nIUkGc) I'm doing my part! If you would like to contribute, carry on. If that sounds awful to you, then you're done! Congratulations!
+
+![Hack The Planet!](http://24.media.tumblr.com/6f010ba4d24477497afb0083a85f676b/tumblr_mxlz0mFRhV1s373hwo1_400.gif)
+
+# Development
+I opted for `gulp` over `grunt` because I'm a much bigger fan of programming stuff with node streams than trying to declare everything I want through a big javascript config. Tests are via QUnit, which wouldn't have been my first choice but that's what got setup during the `grunt-init videojs` phase so I just stuck with it.
+
+#### Prerequisites
+To get things up and running, simply `npm install` from the project's directory. You may need to install gulp globally with `npm install -g gulp` so that the command line utility can run.
+
+#### Gulp Tasks
+`gulp` takes care of all of the following for you in one shot, but the common tasks are:
+* `gulp` tests (see below), watches ('scripts' and 'tests' folders) and starts a server
+* `gulp test` builds (see below) and tests (in qunit)
+* `gulp build` compiles, copies (to dist) compresses (in dist)
+
+Check out [the gulpfile](gulpfile.js) for more insight.
+
+#### Tests
+You can run tests from the command line with `gulp test` though `gulp` does that by default as well (see above). Since they're QUnit tests, you can load them up in a browser as well. Assuming you have a server running after running `gulp`, you can just go to [http://localhost:3000/tests/index.html](http://localhost:3000/tests/index.html).
+
 ## Release History
 * 0.2.0
 tested and works much better, but still unverified from comScore (stay tuned...)
@@ -139,20 +160,5 @@ tested and works much better, but still unverified from comScore (stay tuned...)
 * 0.1.0
 totally untested and unverified, but it appears to be working properly :)
 
-## Development
-I opted for `gulp` over `grunt` because I'm a much bigger fan of programming stuff with node streams than trying to declare everything I want through a big javascript config. Tests are via QUnit, which wouldn't have been my first choice but that's what got setup during the `grunt-init videojs` phase so I just stuck with it.
-
-#### Prerequisites
-To get things up and running, simply `npm install` from the project's directory. You may need to install gulp globally with `npm install -g gulp` so that the command line utility can run.
-
-#### Compilation and Testing Server
-`gulp` takes care of this for you, but the common tasks are:
-`gulp` (tests (see below), watches ('scripts' and 'tests' folders) and starts a server
-`gulp test` (builds (see below) and tests (in qunit))
-`gulp build` (compiles, copies (to dist) compresses (in dist))
-
-### Tests
-You can run tests from the command line with `gulp test` though `gulp` does that by default as well (see above). Since they're QUnit tests, you can load them up in a browser as well. Assuming you have a server running after running `gulp`, you can just go to [http://localhost:3000/tests/index.html](http://localhost:3000/tests/index.html).
-
-# License
+## License
 This project uses the [Mozilla Public Foundation 2.0 License](http://www.mozilla.org/MPL/2.0/).

@@ -23,11 +23,11 @@
     });
     test("plugin is registered", function() {
       var diff, methods, plugin;
-      methods = ['end', 'getClips', 'getCurrentClip', 'pause', 'play', 'progress', 'updateLoadedClip'];
+      methods = ['play', 'pause', 'end', 'buffer', 'getClips', 'getCurrentClip', 'updateLoadedClip', 'classificationTypes'];
       ok(this.player.comscore, "the comscore plugin is present");
       equal(typeof this.player.comscore, 'function', "the comscore plugin reference is a function");
       plugin = this.player.comscore(1234567890, this.playlist);
-      diff = _.difference(methods, _.methods(plugin));
+      diff = _.difference(_.methods(plugin), methods);
       return ok(_.isEmpty(diff), 'all methods are accounted for');
     });
     test("arguments type checking works", function() {

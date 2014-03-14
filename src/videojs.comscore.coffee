@@ -174,13 +174,6 @@
 
       unless @ns_st_ct then @ns_st_ct = classificationTypes.video.default
       return @ns_st_ct
-
-    ###
-    todo support these as well
-    var ns_st_pn = 'part number'; // identifies a segment of the content (increment after mid-roll ad)
-    var ns_st_tp = 'total parts'; // total segments (or 0 if no segments)
-    var ns_st_ct = 'classification type'; // 4-character ID which distinguishes advertisement stream types from content stream types
-    ###
   #------------------------------------------------------------
 
   #------------------------------------------------------------ plugin
@@ -226,26 +219,35 @@
       currentClip = getCurrentClip()
       currentClip.url player.currentSrc()
       currentClip.duration player.duration(), true
-      console.log 'setClip', currentClip
       tracker.setClip currentClip
 
     checkIfStalled = ->
-      if !stalled and currentPosition is getCurrentTime() and stallCounter++ > 3
+      definitivelyStalled = !stalled and stallCounter++ > 3
+      if definitivelyStalled and currentPosition is getCurrentTime()
         stalled = true
         stallCounter = 0
-        tracker.notify events.BUFFER, {}, currentPosition
+        buffer(currentPosition)
         return true
       else if stalled and currentPosition isnt getCurrentTime()
-        tracker.notify events.PLAY, {}, currentPosition
+        play(currentPosition)
         stalled = false
         stallCounter = 0
         return false
 
       return false
 
-    play = -> tracker.notify events.PLAY, {}, currentPosition
-    pause = -> tracker.notify events.PAUSE, {}, currentPosition
-    end = -> tracker.notify events.END, {}, currentClip.duration()
+    play = (position) ->
+      tracker.notify events.PLAY, {}, position
+
+    pause = (position) ->
+      tracker.notify events.PAUSE, {}, position
+
+    end = (duration) ->
+      tracker.notify events.END, {}, duration
+
+    buffer = (position) ->
+      tracker.notify events.BUFFER, {}, position
+
     progress = ->
       checkIfStalled()
       currentPosition = getCurrentTime()
@@ -253,9 +255,9 @@
     # listeners
     # -------------------------
     player.on 'durationchange', -> updateLoadedClip()
-    player.on 'play', play
-    player.on 'ended', end
-    player.on 'pause', pause
+    player.on 'play', -> play currentPosition
+    player.on 'ended', -> end currentClip.duration()
+    player.on 'pause', -> pause currentPosition
     player.on 'progress', progress
 
     # exposing the public api
@@ -264,7 +266,7 @@
       play: play
       pause: pause
       end: end
-      progress: progress
+      buffer: buffer
       getClips: getClips
       getCurrentClip: getCurrentClip
       updateLoadedClip: updateLoadedClip

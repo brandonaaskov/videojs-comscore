@@ -41,19 +41,20 @@
 
   test "plugin is registered", ->
     methods = [
-      'end',
-      'getClips',
-      'getCurrentClip',
-      'pause',
-      'play',
-      'progress',
+      'play'
+      'pause'
+      'end'
+      'buffer'
+      'getClips'
+      'getCurrentClip'
       'updateLoadedClip'
+      'classificationTypes'
     ]
     ok @player.comscore, "the comscore plugin is present"
     equal typeof @player.comscore, 'function', "the comscore plugin reference is a function"
 
     plugin = @player.comscore(1234567890, @playlist)
-    diff = _.difference methods, _.methods(plugin)
+    diff = _.difference _.methods(plugin), methods
     ok _.isEmpty(diff), 'all methods are accounted for'
 
   test "arguments type checking works", ->
