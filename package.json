@@ -5,8 +5,9 @@
     "name": "Brandon Aaskov",
     "email": "brandonaaskov@gmail.com"
   },
+  "description": "comScore plugin for videojs players (see Github for full docs).",
   "engines": {
-    "node": ">= 0.8.0"
+    "node": ">= 0.10.26"
   },
   "devDependencies": {
     "lodash": "^2.4.1",
@@ -17,5 +18,6 @@
     "gulp-rename": "^1.2.0",
     "connect": "^2.14.2",
     "gulp-qunit": "^0.2.1"
-  }
+  },
+  "license": "MPL"
 }
