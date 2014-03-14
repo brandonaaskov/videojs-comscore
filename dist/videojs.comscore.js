@@ -215,7 +215,7 @@
           };
         })(this);
         if (this.ad()) {
-          return classificationTypes.ad.preroll;
+          this.ns_st_ct = classificationTypes.ad.preroll;
         } else {
           if (this.live()) {
             if (this.premium()) {
@@ -239,6 +239,9 @@
               this.ns_st_ct = classificationTypes.video.shortform.ugc;
             }
           }
+        }
+        if (!this.ns_st_ct) {
+          this.ns_st_ct = classificationTypes.video["default"];
         }
         return this.ns_st_ct;
       };
@@ -314,6 +317,7 @@
         currentClip = getCurrentClip();
         currentClip.url(player.currentSrc());
         currentClip.duration(player.duration(), true);
+        console.log('setClip', currentClip);
         return tracker.setClip(currentClip);
       };
       checkIfStalled = function() {

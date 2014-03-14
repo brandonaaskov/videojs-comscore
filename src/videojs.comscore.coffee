@@ -150,7 +150,7 @@
 
       if @ad() # if it's an ad
         # for now, if it's an ad we're just gonna call it a preroll all the time
-        return classificationTypes.ad.preroll
+        @ns_st_ct = classificationTypes.ad.preroll
       else # if it's content
         if @live() # live
           if @premium()
@@ -172,6 +172,7 @@
           if @ugc()
             @ns_st_ct = classificationTypes.video.shortform.ugc
 
+      unless @ns_st_ct then @ns_st_ct = classificationTypes.video.default
       return @ns_st_ct
 
     ###
@@ -225,6 +226,7 @@
       currentClip = getCurrentClip()
       currentClip.url player.currentSrc()
       currentClip.duration player.duration(), true
+      console.log 'setClip', currentClip
       tracker.setClip currentClip
 
     checkIfStalled = ->

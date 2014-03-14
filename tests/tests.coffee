@@ -115,6 +115,7 @@
     clip.premium true
     clip.ugc false
     clip.live false
+    equal clip.classification(), clip.ns_st_ct, 'classification matches ns value'
     equal clip.classification(), @player.comscore.classificationTypes.video.longform.premium, 'video:longform:premium'
 
     #video:shortform:premium
@@ -123,6 +124,7 @@
     clip.premium true
     clip.ugc false
     clip.live false
+    equal clip.classification(), clip.ns_st_ct, 'classification matches ns value'
     equal clip.classification(), @player.comscore.classificationTypes.video.shortform.premium, 'video:shortform:premium'
 
     #video:longform:ugc
@@ -131,6 +133,7 @@
     clip.premium false
     clip.ugc true
     clip.live false
+    equal clip.classification(), clip.ns_st_ct, 'classification matches ns value'
     equal clip.classification(), @player.comscore.classificationTypes.video.longform.ugc, 'video:longform:ugc'
 
     #video:shortform:ugc
@@ -139,6 +142,7 @@
     clip.premium false
     clip.ugc true
     clip.live false
+    equal clip.classification(), clip.ns_st_ct, 'classification matches ns value'
     equal clip.classification(), @player.comscore.classificationTypes.video.shortform.ugc, 'video:shortform:ugc'
 
     #video:live:premium
@@ -146,6 +150,7 @@
     clip.premium true
     clip.ugc false
     clip.live true
+    equal clip.classification(), clip.ns_st_ct, 'classification matches ns value'
     equal clip.classification(), @player.comscore.classificationTypes.video.live.premium, 'video:live:premium'
 
     #video:live:ugc
@@ -153,16 +158,19 @@
     clip.premium false
     clip.ugc true
     clip.live true
+    equal clip.classification(), clip.ns_st_ct, 'classification matches ns value'
     equal clip.classification(), @player.comscore.classificationTypes.video.live.ugc, 'video:live:ugc'
 
     #ad:preroll
     clip.ad true
     clip.live false
+    equal clip.classification(), clip.ns_st_ct, 'classification matches ns value'
     equal clip.classification(), @player.comscore.classificationTypes.ad.preroll, 'ad.preroll'
 
     #ad:live
     clip.ad true
     clip.live true
+    equal clip.classification(), clip.ns_st_ct, 'classification matches ns value'
     equal clip.classification(), @player.comscore.classificationTypes.ad.preroll, 'ad.live (returns preroll value for now)'
 
 ) window.videojs
