@@ -1,4 +1,6 @@
 (function() {
+  var __slice = [].slice;
+
   (function(vjs) {
 
     /*
@@ -10,7 +12,7 @@
       return toString.call(obj) === "[object Array]";
     };
     isNumber = function(value) {
-      return parseInt(value, 10) !== NaN;
+      return !isNaN(parseInt(value, 10));
     };
     extend = function(obj) {
       var arg, i, k;
@@ -18,8 +20,8 @@
       i = void 0;
       k = void 0;
       i = 1;
-      while (i < arguments_.length) {
-        arg = arguments_[i];
+      while (i < arguments.length) {
+        arg = arguments[i];
         for (k in arg) {
           if (arg.hasOwnProperty(k)) {
             obj[k] = arg[k];
@@ -70,7 +72,15 @@
       }
     };
     Clip = (function() {
-      Clip.prototype.ns_st_ad = null;
+      var live, premium, ugc;
+
+      premium = false;
+
+      ugc = false;
+
+      live = false;
+
+      Clip.prototype.ns_st_ad = false;
 
       Clip.prototype.ns_st_cl = null;
 
@@ -86,6 +96,8 @@
 
       Clip.prototype.ns_st_cu = null;
 
+      Clip.prototype.ns_st_ct = null;
+
       function Clip(index, metadata) {
         this.ad(metadata[keymap.ad]);
         this.premium(metadata[keymap.premium]);
@@ -97,35 +109,47 @@
         this.publisher(metadata[keymap.publisher]);
         this.show(metadata[keymap.show]);
         this.url(metadata[keymap.url]);
-        this.classification(metadata[keymap.url]);
+        this.classification(metadata[keymap.classification]);
       }
 
-      Clip.prototype.ad = function(flag) {
-        if (flag) {
+      Clip.prototype.ad = function() {
+        var args, flag;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        flag = args != null ? args[0] : void 0;
+        if (flag != null ? flag.toString() : void 0) {
           this.ns_st_ad = flag;
         }
         return this.ns_st_ad;
       };
 
-      Clip.prototype.premium = function(flag) {
-        if (flag) {
-          this.premium = flag;
+      Clip.prototype.ugc = function() {
+        var args, flag;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        flag = args != null ? args[0] : void 0;
+        if (flag != null ? flag.toString() : void 0) {
+          ugc = flag;
         }
-        return this.premium;
+        return ugc;
       };
 
-      Clip.prototype.ugc = function(flag) {
-        if (flag) {
-          this.premium = !flag;
+      Clip.prototype.premium = function() {
+        var args, flag;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        flag = args != null ? args[0] : void 0;
+        if (flag != null ? flag.toString() : void 0) {
+          premium = flag;
         }
-        return this.premium;
+        return premium;
       };
 
-      Clip.prototype.live = function(flag) {
-        if (flag) {
-          this.live = flag;
+      Clip.prototype.live = function() {
+        var args, flag;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        flag = args != null ? args[0] : void 0;
+        if (flag != null ? flag.toString() : void 0) {
+          live = flag;
         }
-        return this.live;
+        return live;
       };
 
       Clip.prototype.duration = function(length, inSeconds) {
@@ -135,7 +159,7 @@
         if (length) {
           this.ns_st_cl = Math.round(length);
         }
-        return this.ns_st_cl;
+        return this.ns_st_cl || 0;
       };
 
       Clip.prototype.index = function(index) {
@@ -180,35 +204,44 @@
         return this.ns_st_cu;
       };
 
-      Clip.prototype.classification = function() {
+      Clip.prototype.classification = function(classification) {
         var isLongForm;
-        isLongForm = function() {
-          return this.duration() / 1000 >= 10;
-        };
-        if (this.ad) {
+        if (classification) {
+          this.ns_st_ct = classification;
+        }
+        isLongForm = (function(_this) {
+          return function() {
+            return _this.duration() / 1000 >= 600;
+          };
+        })(this);
+        if (this.ad()) {
           return classificationTypes.ad.preroll;
         } else {
           if (this.live()) {
+            debugger;
             if (this.premium()) {
-              return classificationTypes.video.live.premium;
-            } else {
-              return classificationTypes.video.live.ugc;
+              this.ns_st_ct = classificationTypes.video.live.premium;
             }
-          }
-          if (isLongForm()) {
+            if (this.ugc()) {
+              this.ns_st_ct = classificationTypes.video.live.ugc;
+            }
+          } else if (isLongForm()) {
             if (this.premium()) {
-              return classificationTypes.video.longform.premium;
-            } else {
-              return classificationTypes.video.longform.ugc;
+              this.ns_st_ct = classificationTypes.video.longform.premium;
+            }
+            if (this.ugc()) {
+              this.ns_st_ct = classificationTypes.video.longform.ugc;
             }
           } else {
             if (this.premium()) {
-              return classificationTypes.video.shortform.premium;
-            } else {
-              return classificationTypes.video.shortform.ugc;
+              this.ns_st_ct = classificationTypes.video.shortform.premium;
+            }
+            if (this.ugc()) {
+              this.ns_st_ct = classificationTypes.video.shortform.ugc;
             }
           }
         }
+        return this.ns_st_ct;
       };
 
 
@@ -223,7 +256,7 @@
 
     })();
     comscore = function(id, playlist, keymapOverride) {
-      var checkIfStalled, clips, currentClip, currentPosition, end, events, getClipByUrl, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, stallCounter, stalled, tracker, updateLoadedClip;
+      var checkIfStalled, clips, currentClip, currentPosition, end, events, getClipByUrl, getClips, getCurrentClip, getCurrentTime, initialize, makeClips, pause, play, player, progress, stallCounter, stalled, tracker, updateLoadedClip;
       if (!isNumber(id)) {
         throw new Error('The first argument should be your comScore ID');
       }
@@ -272,6 +305,12 @@
       getCurrentTime = function() {
         return Math.round(player.currentTime() * 1000);
       };
+      getClips = function(index) {
+        if (index >= 0) {
+          return clips[index];
+        }
+        return clips;
+      };
       updateLoadedClip = function() {
         currentClip = getCurrentClip();
         currentClip.url(player.currentSrc());
@@ -317,13 +356,13 @@
         pause: pause,
         end: end,
         progress: progress,
-        getClips: function() {
-          return clips;
-        },
+        getClips: getClips,
         getCurrentClip: getCurrentClip,
-        updateLoadedClip: updateLoadedClip
+        updateLoadedClip: updateLoadedClip,
+        classificationTypes: classificationTypes
       };
-      return initialize();
+      initialize();
+      return player.comscore;
     };
     return vjs.plugin("comscore", comscore);
   })(window.videojs);

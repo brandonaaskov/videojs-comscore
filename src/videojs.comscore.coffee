@@ -6,7 +6,7 @@
   ###
 
   isArray = (obj) -> toString.call(obj) is "[object Array]"
-  isNumber = (value) -> parseInt(value, 10) isnt NaN
+  isNumber = (value) -> !isNaN parseInt(value, 10)
 
   # supplied during the `$ grunt-init videojs` process
   extend = (obj) -> #, arg1, arg2, ...
@@ -14,8 +14,8 @@
     i = undefined
     k = undefined
     i = 1
-    while i < arguments_.length
-      arg = arguments_[i]
+    while i < arguments.length
+      arg = arguments[i]
       for k of arg
         obj[k] = arg[k]  if arg.hasOwnProperty(k)
       i++
@@ -60,13 +60,15 @@
       live: 'va21'
       audio: 'aa00'
       default: 'va00'
-
-
   #------------------------------------------------------------
 
   #------------------------------------------------------------ Clip
   class Clip
-    ns_st_ad: null
+    premium = false
+    ugc = false
+    live = false
+
+    ns_st_ad: false
     ns_st_cl: null
     ns_st_cn: null
     ns_st_ci: null
@@ -74,6 +76,7 @@
     ns_st_pu: null
     ns_st_pr: null
     ns_st_cu: null
+    ns_st_ct: null
 
     constructor: (index, metadata) ->
       @ad metadata[keymap.ad]
@@ -86,30 +89,34 @@
       @publisher metadata[keymap.publisher]
       @show metadata[keymap.show]
       @url metadata[keymap.url]
-      @classification metadata[keymap.url]
+      @classification metadata[keymap.classification]
 
     # getters/setters (could be more DRY, but I'm leaving it this way for clarity)
     # -------------------------
-    ad: (flag) ->
-      if flag then @ns_st_ad = flag
+    ad: (args...) ->
+      flag = args?[0]
+      if flag?.toString() then @ns_st_ad = flag
       return @ns_st_ad
 
-    premium: (flag) ->
-      if flag then @premium = flag
-      return @premium
+    ugc: (args...) ->
+      flag = args?[0]
+      if flag?.toString() then ugc = flag
+      return ugc
 
-    ugc: (flag) ->
-      if flag then @premium = !flag
-      return @premium
+    premium: (args...) ->
+      flag = args?[0]
+      if flag?.toString() then premium = flag
+      return premium
 
-    live: (flag) ->
-      if flag then @live = flag
-      return @live
+    live: (args...) ->
+      flag = args?[0]
+      if flag?.toString() then live = flag
+      return live
 
     duration: (length, inSeconds) ->
       if inSeconds then length = length * 1000
       if length then @ns_st_cl = Math.round(length)
-      return @ns_st_cl
+      return @ns_st_cl || 0
 
     index: (index) ->
       if index then @ns_st_cn = index
@@ -135,31 +142,38 @@
       if url then @ns_st_cu = url
       return @ns_st_cu
 
-    classification: ->
-      # long form is defined as 10 minutes or greater
-      isLongForm = -> @duration()/1000 >= 10
+    classification: (classification) ->
+      if classification then @ns_st_ct = classification
 
-      if @ad # if it's an ad
+      # long form is defined as 10 minutes or greater
+      isLongForm = => @duration()/1000 >= 600
+
+      if @ad() # if it's an ad
         # for now, if it's an ad we're just gonna call it a preroll all the time
         return classificationTypes.ad.preroll
       else # if it's content
-        if @live()
+        if @live() # live
+          debugger
           if @premium()
-            return classificationTypes.video.live.premium
-          else
-            return classificationTypes.video.live.ugc
+            @ns_st_ct = classificationTypes.video.live.premium
 
-        if isLongForm()
+          if @ugc()
+            @ns_st_ct = classificationTypes.video.live.ugc
+
+        else if isLongForm() # video
           if @premium()
-            return classificationTypes.video.longform.premium
-          else
-            return classificationTypes.video.longform.ugc
+            @ns_st_ct = classificationTypes.video.longform.premium
+
+          if @ugc()
+            @ns_st_ct = classificationTypes.video.longform.ugc
         else
           if @premium()
-            return classificationTypes.video.shortform.premium
-          else
-            return classificationTypes.video.shortform.ugc
+            @ns_st_ct = classificationTypes.video.shortform.premium
 
+          if @ugc()
+            @ns_st_ct = classificationTypes.video.shortform.ugc
+
+      return @ns_st_ct
 
     ###
     todo support these as well
@@ -167,7 +181,6 @@
     var ns_st_tp = 'total parts'; // total segments (or 0 if no segments)
     var ns_st_ct = 'classification type'; // 4-character ID which distinguishes advertisement stream types from content stream types
     ###
-
   #------------------------------------------------------------
 
   #------------------------------------------------------------ plugin
@@ -204,6 +217,10 @@
     getCurrentClip = -> getClipByUrl(player.currentSrc())
 
     getCurrentTime = -> Math.round(player.currentTime() * 1000)
+
+    getClips = (index) ->
+      if index >= 0 then return clips[index]
+      return clips
 
     updateLoadedClip = ->
       currentClip = getCurrentClip()
@@ -247,11 +264,13 @@
       pause: pause
       end: end
       progress: progress
-      getClips: -> clips
+      getClips: getClips
       getCurrentClip: getCurrentClip
       updateLoadedClip: updateLoadedClip
+      classificationTypes: classificationTypes
 
     initialize()
+    return player.comscore
   #------------------------------------------------------------ end plugin
 
   # register the plugin with video.js

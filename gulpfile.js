@@ -5,10 +5,12 @@ var _ = require('lodash'),
   rename = require('gulp-rename'),
   http = require('http'),
   connect = require('connect'),
+  qunit = require('gulp-qunit'),
   paths = {
     scripts: ['src/**/*.coffee'],
     compiled: ['src/**/*.js'],
-    tests: ['tests/**/*.coffee', 'tests/**/*.html'],
+    tests: ['tests/**/*.coffee'],
+    qunitHtml: ['tests/index.html'],
     demo: ['demo/*.html']
   };
 
@@ -25,6 +27,14 @@ gulp.task('compile', function () {
   gulp.src(paths.scripts)
     .pipe(coffee())
     .pipe(gulp.dest('src'));
+
+  gulp.on('error', function () {
+    console.log('error');
+  });
+
+  gulp.src(paths.tests)
+    .pipe(coffee())
+    .pipe(gulp.dest('tests'));
 });
 
 // uglify (aka minify)
@@ -43,9 +53,14 @@ gulp.task('copy', function () {
     .pipe(gulp.dest('dist'));
 });
 
+gulp.task('qunit', function () {
+  return gulp.src(paths.qunitHtml).pipe(qunit());
+});
+
 // recompile coffeescript files on change
 gulp.task('watch', function () {
-  gulp.watch(paths.scripts, ['compile']);
+  gulp.watch(paths.scripts, ['test']);
+  gulp.watch(paths.tests, ['test']);
 });
 
 // launch this repo as a server (port 3000)
@@ -54,5 +69,8 @@ gulp.task('serve', create_static_server);
 // builds everything to the `dist` directory
 gulp.task('build', ['compile', 'copy', 'compress']);
 
+// does a build and runs the qunit tests
+gulp.task('test', ['build', 'qunit']);
+
 // runs a build and launches a server
-gulp.task('default', ['build', 'watch', 'serve']);
+gulp.task('default', ['build', 'test', 'watch', 'serve']);
