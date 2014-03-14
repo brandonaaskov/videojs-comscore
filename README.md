@@ -28,7 +28,7 @@ videojs('video', {}, function() {
 
 comScore has the notion of segments (aka clips), and those segments can be ads, videos, audio-only, etc. comScore tracks these pieces of content as clips, and differentiates between ads and content via by sending an extra param or not, respectively. So, you may have five clips to comprise only one "episode" of a show, for instance. comScore often refers to a show name as either the "program name" or "series name."
 
-The "classification", or "classification type" is a special code that gets sent to comScore. Which code is sent is dependent on a few main factors: if it's an ad or not, if it's long form or not (longer than 10 minutes), if it's premium or user-generated, and if it's live or not. There are [some other things too](blob/master/src/videojs.comscore.coffee#L39), but that covers the most common stuff.
+The "classification", or "classification type" is a special code that gets sent to comScore. Which code is sent is dependent on a few main factors: if it's an ad or not, if it's long form or not (longer than 10 minutes), if it's premium or user-generated, and if it's live or not. There are [some other things too](src/videojs.comscore.coffee#L39), but that covers the most common stuff.
 
 ## Documentation
 
@@ -63,7 +63,7 @@ If you don't use a keymap, it means that the data structure in your playlist arr
 Then the plugin will expect that each clip item in the playlist array will have a key called `videoLocation` and another called `displayName`, and that the values should map to what the plugin is calling `url` and `name`. Thus, the right values get sent to comScore.
 
 ## Examples
-Run `gulp` and then load up [http://localhost:3000/src/index.html](http://localhost:3000/src/index.html) to see a player in action. If you're looking for examples for [keymapping](#keymap-object), then check out [a full keymap example in the tests folder](blob/master/tests/mocks/keymappedPlaylist.js) and check out the [default keymap](blob/master/src/videojs.comscore.coffee#L24) for reference.
+Run `gulp` and then load up [http://localhost:3000/src/index.html](http://localhost:3000/src/index.html) to see a player in action. If you're looking for examples for [keymapping](#keymap-object), then check out [a full keymap example in the tests folder](tests/mocks/keymappedPlaylist.js) and check out the [default keymap](src/videojs.comscore.coffee#L24) for reference.
 
 #### basic setup
 ```javascript
