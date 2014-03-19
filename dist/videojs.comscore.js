@@ -328,7 +328,6 @@
         return false;
       };
       play = function(position) {
-        console.log('position', position);
         return tracker.notify(events.PLAY, {}, position);
       };
       pause = function(position) {
