@@ -153,12 +153,5 @@ Check out [the gulpfile](gulpfile.js) for more insight.
 #### Tests
 You can run tests from the command line with `gulp test` though `gulp` does that by default as well (see above). Since they're QUnit tests, you can load them up in a browser as well. Assuming you have a server running after running `gulp`, you can just go to [http://localhost:3000/tests/index.html](http://localhost:3000/tests/index.html).
 
-## Release History
-* 0.2.0
-tested and works much better, but still unverified from comScore (stay tuned...)
-
-* 0.1.0
-totally untested and unverified, but it appears to be working properly :)
-
 ## License
 This project uses the [Mozilla Public Foundation 2.0 License](http://www.mozilla.org/MPL/2.0/).
