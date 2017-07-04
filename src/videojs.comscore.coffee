@@ -188,7 +188,7 @@
       PAUSE: ns_.StreamSense.PlayerEvents.PAUSE
 
     player = @ # save a reference to the player instance
-    tracker = new ns_.StreamSense {}, "http://b.scorecardresearch.com/p?c1=2&c2=#{id}"
+    tracker = new ns_.StreamSense {}, "//b.scorecardresearch.com/p?c1=2&c2=#{id}"
     currentClip = null
     clips = []
     keymap = extend {}, keymap, keymapOverride if keymapOverride
